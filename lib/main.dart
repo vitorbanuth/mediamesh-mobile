@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pontos/pontos.dart';
+import 'contratantes/contratantes.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -27,8 +28,8 @@ class MyApp extends StatelessWidget {
       ),
       home: const MyHomePage(title: 'Mediamesh'),
       routes: {
-        // '/': (context) => const MyHomePage(title: "Mediamesh"),
-        '/pontos': (context) => const Pontos()
+        '/pontos': (context) => const Pontos(),
+        '/contratantes': (context) => const Contratantes()
       },
     );
   }
@@ -91,6 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
           if (index == 1) {
             Navigator.pushNamed(context, '/pontos');
           }
+          else if (index == 2) {
+            Navigator.pushNamed(context, '/contratantes');
+          }
         },
         children: [
           Padding(
@@ -109,6 +113,11 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.place_outlined),
             selectedIcon: Icon(Icons.place),
             label: Text("Pontos"),
+          ),
+          NavigationDrawerDestination(
+            icon: Icon(Icons.business_center_outlined),
+            selectedIcon: Icon(Icons.business_center),
+            label: Text("Contratantes"),
           ),
           NavigationDrawerDestination(
             icon: Icon(Icons.apartment_outlined),

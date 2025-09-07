@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'pontos/pontos.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -26,6 +26,10 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const MyHomePage(title: 'Mediamesh'),
+      routes: {
+        // '/': (context) => const MyHomePage(title: "Mediamesh"),
+        '/pontos': (context) => const Pontos()
+      },
     );
   }
 }
@@ -83,6 +87,11 @@ class _MyHomePageState extends State<MyHomePage> {
         height: 40),
       ),
       drawer: NavigationDrawer(
+        onDestinationSelected: (index) {
+          if (index == 1) {
+            Navigator.pushNamed(context, '/pontos');
+          }
+        },
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),

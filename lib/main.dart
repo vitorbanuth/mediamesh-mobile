@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mediamesh/pontos/new_pops.dart';
 import 'pontos/pops.dart';
 import 'contratantes/contratantes.dart';
+
 // import 'assets/';
 void main() {
   runApp(const MyApp());
@@ -30,7 +32,8 @@ class MyApp extends StatelessWidget {
       home: const MyHomePage(title: 'Mediamesh'),
       routes: {
         '/pontos': (context) => const Pontos(),
-        '/contratantes': (context) => const Contratantes()
+        '/novo_ponto': (context) => const NewPops(),
+        '/contratantes': (context) => const Contratantes(),
       },
     );
   }
@@ -55,7 +58,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   // int _counter = 0;
 
   // void _incrementCounter() {
@@ -85,24 +87,34 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Image.asset('assets/image.png',
-        height: 40),
+        title: Image.asset('assets/image.png', height: 40),
       ),
       drawer: NavigationDrawer(
         onDestinationSelected: (index) {
           if (index == 1) {
             Navigator.pushNamed(context, '/pontos');
-          }
-          else if (index == 2) {
+          } else if (index == 2) {
             Navigator.pushNamed(context, '/contratantes');
           }
         },
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Menu",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                children: const [
+                  TextSpan(text: "OOH"),
+                  TextSpan(
+                    text: "360",
+                    style: TextStyle(color: Color.fromARGB(255, 1, 82, 244)),
+                  ),
+                ],
+              ),
             ),
           ),
           NavigationDrawerDestination(
@@ -162,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
         ),
       ),
-       // This trailing comma makes auto-formatting nicer for build methods.
+      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

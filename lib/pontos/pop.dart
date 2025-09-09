@@ -79,6 +79,10 @@ class Ponto {
       totalInsertsDay: json["totalInsertsDay"] ?? 0,
     );
   }
+
+  void addPonto() {
+    
+  }
 }
 
 class Dimensions {
@@ -132,10 +136,8 @@ class ImageData {
 
   factory ImageData.fromJson(dynamic json) {
     if (json is Map<String, dynamic>) {
-      // Caso venha um objeto
       return ImageData(unique: json["unique"] ?? "");
     } else if (json is String) {
-      // Caso venha string ("" ou url talvez)
       return ImageData(unique: json);
     } else {
       return ImageData(unique: "");

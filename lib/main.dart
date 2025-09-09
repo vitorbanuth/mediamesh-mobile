@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'pontos/pontos.dart';
+import 'pontos/pops.dart';
 import 'contratantes/contratantes.dart';
+// import 'assets/';
 void main() {
   runApp(const MyApp());
 }
@@ -84,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Image.asset('../assets/image.png',
+        title: Image.asset('assets/image.png',
         height: 40),
       ),
       drawer: NavigationDrawer(

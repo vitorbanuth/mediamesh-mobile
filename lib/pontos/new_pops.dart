@@ -4,9 +4,11 @@ import 'pop.dart';
 import 'dart:convert';
 
 class NewPops extends StatefulWidget {
-  final VoidCallback onPopCreated;
+  // final VoidCallback onPopCreated;
 
-   NewPops({Key? key, required this.onPopCreated}) : super(key: key);
+  // NewPops({Key? key, required this.onPopCreated}) : super(key: key);
+
+  const NewPops({Key? key}) : super(key: key);
 
   @override
   State<NewPops> createState() => _NewPopsState();
@@ -347,7 +349,6 @@ class _NewPopsState extends State<NewPops> {
                           content: Text("Ponto criado: ${pontoCriado.name}"),
                         ),
                       );
-
                       // widget.onPopCreated();
                       Navigator.pop(context, pontoCriado);
                     } catch (e) {

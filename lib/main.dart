@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mediamesh/pontos/new_pops.dart';
 import 'pontos/pops.dart';
 import 'contratantes/contratantes.dart';
 
@@ -32,7 +31,6 @@ class MyApp extends StatelessWidget {
       home: const MyHomePage(title: 'Mediamesh'),
       routes: {
         '/pontos': (context) => const Pontos(),
-        // '/novo_ponto': (context) => const NewPops(),
         '/contratantes': (context) => const Contratantes(),
       },
     );

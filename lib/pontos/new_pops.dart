@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'pop.dart';
+import 'dart:convert';
 
 class NewPops extends StatefulWidget {
-  const NewPops({super.key});
+  final VoidCallback onPopCreated;
+
+   NewPops({Key? key, required this.onPopCreated}) : super(key: key);
 
   @override
   State<NewPops> createState() => _NewPopsState();
@@ -16,32 +21,108 @@ class _NewPopsState extends State<NewPops> {
       TextEditingController();
   final TextEditingController widthController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
-  final TextEditingController unitController = TextEditingController();
-  final TextEditingController typeController = TextEditingController();
-  final TextEditingController orientationController = TextEditingController();
-  final TextEditingController materialController = TextEditingController();
-  final TextEditingController facePositionController = TextEditingController();
-  final TextEditingController lightningController = TextEditingController();
-  String? unidadeSelecionada;
+  String? selectedUnity;
+  String? selectedType;
+  String? selectedOrientation;
+  String? selectedMaterial;
+  String? selectedFacePosition;
+  String? selectedLightning;
+
+  final Map<String, String> kindMap = {
+    "Outdoor": "OUTDOOR",
+    "Indoor": "INDOOR",
+    "Elevador": "ELEVATOR",
+  };
+
+  final Map<String, String> materialMap = {
+    "Estático": "PAPER",
+    "Digital": "DIGITAL",
+    "Vinil": "VINYL",
+  };
+
+  final Map<String, String> orientationMap = {
+    "Vertical": "PORTRAIT",
+    "Horizontal": "LANDSCAPE",
+    "Neutro": "NEUTRAL",
+  };
+
+  final Map<String, String> facePositionMap = {
+    "Frontal": "FRONT",
+    "Lateral": "SIDE",
+    "Em Ângulo": "ANGLE",
+  };
+
+  final Map<String, dynamic> dimensionsMap = {
+    "width": 0,
+    "height": 0,
+    "artWidth": 0,
+    "artHeight": 0,
+    "unit": "m",
+    "soilHeight": 0,
+    "totalHeight": 0,
+  };
+
+  final Map<String, dynamic> locationsMap = {
+    "type": "Point",
+    "coordinates": [0, 0],
+  };
+
+  Future<Ponto> createPop({
+    required String name,
+    required String reference,
+    required String address,
+    required String faceDescription,
+    required String width,
+    required String height,
+    required String unit,
+    required String type,
+    required String orientation,
+    required String material,
+    required String facePosition,
+    required String lightning,
+  }) async {
+    final response = await http.post(
+      Uri.parse('https://sinestro.mediamesh.com.br/api/pops/new'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Cookie':
+            'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
+      },
+      body: jsonEncode({
+        "name": name,
+        "kind": kindMap[type],
+        "reference": reference,
+        "address": address,
+        "orientation": orientationMap[orientation],
+        "material": materialMap[material],
+        "facePosition": facePositionMap[facePosition],
+        "faceDescription": faceDescription,
+        "lightSource": lightning,
+        "dimensions": dimensionsMap,
+        "location": locationsMap,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return Ponto.fromJson(jsonDecode(response.body));
+    } else {
+      print(response.statusCode);
+      print(response.body);
+      throw Exception('Falha ao criar ponto: ${response.body}');
+    }
+  }
 
   // Chave para validação do formulário
   final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    // liberar os controllers quando o widget for destruído
     nameController.dispose();
     addressController.dispose();
-    unitController.dispose();
     widthController.dispose();
     heightController.dispose();
     referenceController.dispose();
     faceDescriptionController.dispose();
-    typeController.dispose();
-    orientationController.dispose();
-    materialController.dispose();
-    facePositionController.dispose();
-    lightningController.dispose();
     super.dispose();
   }
 
@@ -76,7 +157,7 @@ class _NewPopsState extends State<NewPops> {
 
               // Referenia
               TextFormField(
-                controller: addressController,
+                controller: referenceController,
                 decoration: const InputDecoration(
                   labelText: "Referência",
                   border: OutlineInputBorder(),
@@ -96,7 +177,7 @@ class _NewPopsState extends State<NewPops> {
 
               // Descritivo da face
               TextFormField(
-                controller: addressController,
+                controller: faceDescriptionController,
                 decoration: const InputDecoration(
                   labelText: "Descritivo da face",
                   border: OutlineInputBorder(),
@@ -136,7 +217,7 @@ class _NewPopsState extends State<NewPops> {
                 items: ['cm', 'm']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
-                onChanged: (val) => setState(() => unidadeSelecionada = val),
+                onChanged: (val) => setState(() => selectedUnity = val),
                 validator: (val) => val == null ? "Escolha uma unidade" : null,
 
                 icon: const Icon(
@@ -155,7 +236,7 @@ class _NewPopsState extends State<NewPops> {
                 items: ['Outdoor', 'Indoor', 'Elevador']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
-                onChanged: (val) => setState(() => unidadeSelecionada = val),
+                onChanged: (val) => setState(() => selectedType = val),
                 validator: (val) => val == null ? "Escolha um tipo" : null,
 
                 icon: const Icon(
@@ -174,7 +255,7 @@ class _NewPopsState extends State<NewPops> {
                 items: ['Vertical', 'Horizontal', 'Neutra']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
-                onChanged: (val) => setState(() => unidadeSelecionada = val),
+                onChanged: (val) => setState(() => selectedOrientation = val),
                 validator: (val) => val == null ? "Escolha um tipo" : null,
 
                 icon: const Icon(
@@ -190,10 +271,10 @@ class _NewPopsState extends State<NewPops> {
                   border: OutlineInputBorder(),
                   iconColor: Colors.blueAccent,
                 ),
-                items: ['Estático', 'Digital']
+                items: ['Estático', 'Digital', 'Vinil']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
-                onChanged: (val) => setState(() => unidadeSelecionada = val),
+                onChanged: (val) => setState(() => selectedMaterial = val),
                 validator: (val) => val == null ? "Escolha um tipo" : null,
 
                 icon: const Icon(
@@ -212,7 +293,7 @@ class _NewPopsState extends State<NewPops> {
                 items: ['Frontal', 'Lateral', 'Em Ângulo']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
-                onChanged: (val) => setState(() => unidadeSelecionada = val),
+                onChanged: (val) => setState(() => selectedFacePosition = val),
                 validator: (val) => val == null ? "Escolha um tipo" : null,
 
                 icon: const Icon(
@@ -231,7 +312,7 @@ class _NewPopsState extends State<NewPops> {
                 items: ['Direta (Refletor)', 'Interna (Backlight)', 'Nenhuma']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
-                onChanged: (val) => setState(() => unidadeSelecionada = val),
+                onChanged: (val) => setState(() => selectedLightning = val),
                 validator: (val) => val == null ? "Escolha um tipo" : null,
 
                 icon: const Icon(
@@ -243,12 +324,40 @@ class _NewPopsState extends State<NewPops> {
 
               // Botão salvar
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // TODO POST API BACKEND
+                    try {
+                      final pontoCriado = await createPop(
+                        name: nameController.text,
+                        reference: referenceController.text,
+                        address: addressController.text,
+                        faceDescription: faceDescriptionController.text,
+                        width: widthController.text,
+                        height: heightController.text,
+                        unit: selectedUnity!,
+                        type: selectedType!,
+                        orientation: selectedOrientation!,
+                        material: selectedMaterial!,
+                        facePosition: selectedFacePosition!,
+                        lightning: selectedLightning!,
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Ponto criado: ${pontoCriado.name}"),
+                        ),
+                      );
+
+                      // widget.onPopCreated();
+                      Navigator.pop(context, pontoCriado);
+                    } catch (e) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text("Erro: $e")));
+                    }
 
                     // Volta para a tela anterior
-                    Navigator.pop(context);
+                    // Navigator.pop(context);
                   }
                 },
                 child: const Text("Salvar"),

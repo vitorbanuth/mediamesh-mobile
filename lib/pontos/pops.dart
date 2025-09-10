@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:mediamesh/pontos/new_pops.dart';
 import 'pop.dart';
 
 class Pontos extends StatefulWidget {
@@ -46,12 +47,30 @@ class _PontosState extends State<Pontos> {
         backgroundColor: Colors.blue[900],
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_location_alt_sharp),
+            icon: Icon(Icons.add_location_alt_sharp),
             iconSize: 32,
-            onPressed: () {
-              Navigator.pushNamed(context, "/novo_ponto");
+            onPressed: () async {
+              final pontoCriado = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NewPops(
+                    onPopCreated: () {
+                      setState(() {
+                        fetchPontos();
+                      });
+                    },
+                  ),
+                ),
+              );
+
+              if (pontoCriado != null) {
+                setState(() {
+                  fetchPontos();
+                });
+              }
             },
           ),
+
           IconButton(
             onPressed: () {
               // TODO FILTER BTN

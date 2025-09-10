@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       home: const MyHomePage(title: 'Mediamesh'),
       routes: {
         '/pontos': (context) => const Pontos(),
-        '/novo_ponto': (context) => const NewPops(),
+        // '/novo_ponto': (context) => const NewPops(),
         '/contratantes': (context) => const Contratantes(),
       },
     );

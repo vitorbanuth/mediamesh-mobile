@@ -7,7 +7,6 @@ import 'campanhas/campanhas.dart';
 import 'configuracoes/configuracoes.dart';
 import 'home/home.dart';
 
-
 // import 'assets/';
 void main() {
   runApp(const MyApp());
@@ -85,10 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Image.asset(
-          '../assets/image.png',
-          height: 40,
-        ),
+        title: Image.asset('assets/image.png', height: 40),
       ),
       drawer: NavigationDrawer(
         onDestinationSelected: (index) {
@@ -97,14 +93,27 @@ class _MyHomePageState extends State<MyHomePage> {
             Navigator.pushNamed(context, route);
           }
         },
-        children: const [
+        children: [
           Padding(
             padding: EdgeInsets.all(16.0),
-            child: Text(
-              "Menu",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                children: [
+                  TextSpan(text: "OOH"),
+                  TextSpan(
+                    text: "360",
+                    style: TextStyle(color: Colors.blue.shade700),
+                  ),
+                ],
+              ),
             ),
           ),
+
           NavigationDrawerDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
@@ -143,9 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-        ),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center),
       ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );

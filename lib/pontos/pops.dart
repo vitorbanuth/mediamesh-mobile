@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:mediamesh/pontos/edit_pops.dart';
 import 'package:mediamesh/pontos/new_pops.dart';
 import 'pop.dart';
 
@@ -50,7 +51,6 @@ class _PontosState extends State<Pontos> {
       throw Exception("Falha ao deletar ponto: ${response.statusCode}");
     }
   }
-
   @override
   void initState() {
     super.initState();
@@ -115,8 +115,19 @@ class _PontosState extends State<Pontos> {
                     motion: const DrawerMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) {
-                          // TODO EDIT TILE
+                        onPressed: (context) async {
+                          final pontoAtualizado = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditPops(ponto: ponto),
+                            ),
+                          );
+
+                          if (pontoAtualizado == true) {
+                            setState(() {
+                              pontos = fetchPontos();
+                            });
+                          }
                         },
                         backgroundColor: Colors.blue,
                         icon: Icons.edit,

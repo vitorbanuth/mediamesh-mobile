@@ -34,22 +34,22 @@ class _PontosState extends State<Pontos> {
     }
   }
 
-  Future<void> deletePonto(String unique) async {
-    final response = await http.delete(
-      Uri.parse('https://sinestro.mediamesh.com.br/api/pops/$unique'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie':
-            'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
-      },
-    );
+  // Future<void> deletePonto(String unique) async {
+  //   final response = await http.delete(
+  //     Uri.parse('https://sinestro.mediamesh.com.br/api/pops/$unique'),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Cookie':
+  //           'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
+  //     },
+  //   );
 
-    if (response.statusCode == 200) {
-      print("✅ Ponto deletado com sucesso");
-    } else {
-      throw Exception("Falha ao deletar ponto: ${response.statusCode}");
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     print("✅ Ponto deletado com sucesso");
+  //   } else {
+  //     throw Exception("Falha ao deletar ponto: ${response.statusCode}");
+  //   }
+  // }
 
   @override
   void initState() {
@@ -61,11 +61,17 @@ class _PontosState extends State<Pontos> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pontos"),
+        title: const Text("Pontos", style: TextStyle(color: Colors.white, fontSize: 24,fontWeight: FontWeight.bold)) ,
+        centerTitle: true,
+        iconTheme: IconThemeData(
+          color: Colors.white
+        ),
+      
         backgroundColor: Colors.blue[900],
         actions: [
           IconButton(
             icon: Icon(Icons.add_location_alt_sharp),
+            color: Colors.white,
             iconSize: 32,
             onPressed: () async {
               final pontoCriado = await Navigator.push(
@@ -74,13 +80,10 @@ class _PontosState extends State<Pontos> {
               );
 
               if (pontoCriado != null) {
-                print("entrei no if");
                 setState(() {
                   pontos = fetchPontos();
                 });
-              } else {
-                print("entrei no else ");
-              }
+              } 
             },
           ),
 
@@ -89,6 +92,7 @@ class _PontosState extends State<Pontos> {
               // TODO FILTER BTN
             },
             icon: const Icon(Icons.filter_alt_outlined),
+            color: Colors.white,
             iconSize: 32,
           ),
         ],
@@ -121,37 +125,11 @@ class _PontosState extends State<Pontos> {
                         backgroundColor: Colors.blue,
                         icon: Icons.edit,
                       ),
-                      SlidableAction(
-                        onPressed: (context) async {
-                          try {
-                            await deletePonto(
-                              ponto.unique,
-                            ); // deleta no backend
-                            setState(() {
-                              pontos =
-                                  fetchPontos(); // atualiza a lista igual no create
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("✅ Ponto deletado com sucesso"),
-                              ),
-                            );
-                          } catch (e) {
-                            print("Erro ao deletar: $e");
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Erro ao deletar ponto: $e"),
-                              ),
-                            );
-                          }
-                        },
-                        backgroundColor: Colors.red,
-                        icon: Icons.delete,
-                      ),
                     ],
                   ),
                   child: ListTile(
                     leading: const Icon(Icons.location_on),
+                    iconColor: Colors.red.shade300,
                     title: Text(ponto.name),
                     subtitle: Text(ponto.reference),
                   ),

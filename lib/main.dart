@@ -5,6 +5,7 @@ import 'agencias/agencias.dart';
 import 'arquivos/arquivos.dart';
 import 'campanhas/campanhas.dart';
 import 'configuracoes/configuracoes.dart';
+import 'tasks/tasks.dart';
 import 'home/home.dart';
 
 // import 'assets/';
@@ -13,13 +14,14 @@ void main() {
 }
 
 const drawerRoutes = {
+  0: '/home',
   1: '/pontos',
-  2: '/contratantes',
-  3: '/agencias',
-  4: '/arquivos',
+  2: '/tarefas',
+  3: '/contratantes',
+  4: '/agencias',
   5: '/campanhas',
-  6: '/configuracoes',
-  7: '/home',
+  6: '/arquivos',
+  7: '/configuracoes',
 };
 
 class MyApp extends StatelessWidget {
@@ -30,14 +32,23 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Mediamesh',
       theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.blue.shade900,
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
         colorScheme: ColorScheme(
-          primary: Colors.blue.shade900,
+          primary: Colors.white,
           onPrimary: Colors.white,
           secondary: Colors.blue.shade700,
           onSecondary: Colors.white,
           error: Colors.red.shade700,
           onError: Colors.white,
-          surface: Colors.white,
+          surface: Colors.grey.shade200,
           onSurface: Colors.black,
           brightness: Brightness.light,
         ),
@@ -47,6 +58,7 @@ class MyApp extends StatelessWidget {
         '/pontos': (context) => const Pontos(),
         '/contratantes': (context) => const Contratantes(),
         '/agencias': (context) => const Agencias(),
+        '/tarefas': (context) => const Tarefas(),
         '/arquivos': (context) => const Arquivos(),
         '/campanhas': (context) => const Campanhas(),
         '/configuracoes': (context) => const Configuracoes(),
@@ -66,27 +78,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // int _counter = 0;
-
-  // void _incrementCounter() {
-  //   setState(() {
-  //     // This call to setState tells the Flutter framework that something has
-  //     // changed in this State, which causes it to rerun the build method below
-  //     // so that the display can reflect the updated values. If we changed
-  //     // _counter without calling setState(), then the build method would not be
-  //     // called again, and so nothing would appear to happen.
-  //     _counter++;
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
+        iconTheme: IconThemeData(color: Colors.black),
         title: Image.asset('assets/image.png', height: 40),
       ),
       drawer: NavigationDrawer(
+        
         onDestinationSelected: (index) {
           final route = drawerRoutes[index];
           if (route != null) {
@@ -123,6 +124,11 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.place_outlined),
             selectedIcon: Icon(Icons.place),
             label: Text("Pontos"),
+          ),
+          NavigationDrawerDestination(
+            icon: Icon(Icons.assignment_outlined),
+            selectedIcon: Icon(Icons.assignment),
+            label: Text("Tarefas"),
           ),
           NavigationDrawerDestination(
             icon: Icon(Icons.business_center_outlined),

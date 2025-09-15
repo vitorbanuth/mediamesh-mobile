@@ -326,6 +326,7 @@ class _NewPopsState extends State<NewPops> {
 
               // Botão salvar
               ElevatedButton(
+                
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     try {
@@ -361,7 +362,10 @@ class _NewPopsState extends State<NewPops> {
                     // Navigator.pop(context);
                   }
                 },
-                child: const Text("Salvar"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue
+                ),
+                child: const Text("Salvar", style: TextStyle(color: Colors.white),),
               ),
             ],
           ),

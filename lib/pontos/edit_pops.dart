@@ -95,7 +95,7 @@ class _EditPopsState extends State<EditPops> {
         "faceDescription": faceDescription,
        // "lightSource": lightning,
         "dimensions": dimensionsMap,
-       // "location": locationsMap,
+       // "location": locationsMap, COLOCAR UNIQUE E ID
       }),
     );
 

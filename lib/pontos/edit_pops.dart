@@ -13,18 +13,20 @@ class EditPops extends StatefulWidget {
 }
 
 class _EditPopsState extends State<EditPops> {
+  final TextEditingController uniqueController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController referenceController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController faceDescriptionController = TextEditingController();
   final TextEditingController widthController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
+
   String? selectedUnity;
   String? selectedType;
   String? selectedOrientation;
   String? selectedMaterial;
   String? selectedFacePosition;
-  //String? selectedLightning;
 
   final Map<String, String> kindMap = {
     "Outdoor": "OUTDOOR",
@@ -50,20 +52,9 @@ class _EditPopsState extends State<EditPops> {
     "Em Ângulo": "ANGLE",
   };
 
-  final Map<String, dynamic> dimensionsMap = {
-    "width": 0,
-    "height": 0,
-    "artWidth": 0,
-    "artHeight": 0,
-    "unit": "m",
-  };
-
-  //final Map<String, dynamic> locationsMap = {
-   // "type": "Point",
-   // "coordinates": [0, 0],
- // };
-
   Future<void> updatePonto({
+    required String id,
+    required String unique,
     required String name,
     required String reference,
     required String address,
@@ -75,42 +66,79 @@ class _EditPopsState extends State<EditPops> {
     required String orientation,
     required String material,
     required String facePosition,
-    //required String lightning,
+    required dynamic lightning, // mesmo tipo que você usa no NewPops
   }) async {
+    final int? widthValue = int.tryParse(width);
+    final int? heightValue = int.tryParse(height);
+    if (widthValue == null || heightValue == null) {
+      throw Exception("Largura/Altura inválidas.");
+    }
+
+    final dimensionsMap = {
+      "width": widthValue,
+      "height": heightValue,
+      "unit": unit,
+      // preserva se o backend validar esses campos
+      "artWidth": widget.ponto.dimensions.artWidth,
+      "artHeight": widget.ponto.dimensions.artHeight,
+    };
+
+    final locationsMap = {
+      "type": widget.ponto.location.type,
+      "coordinates": widget.ponto.location.coordinates,
+    };
+
+    final payload = {
+      // obrigatórios segundo o stakeholder
+      "id": id,          // se o backend exigir "_id", troque a chave aqui
+      "unique": unique,
+
+      // mesmo shape do criar ponto
+      "name": name,
+      "kind": kindMap[type],
+      "reference": reference,
+      "address": address,
+      "orientation": orientationMap[orientation],
+      "material": materialMap[material],
+      "facePosition": facePositionMap[facePosition],
+      "faceDescription": faceDescription,
+      "lightSource": lightning,
+      "dimensions": dimensionsMap,
+      "location": locationsMap,
+    };
+
     final response = await http.post(
-      Uri.parse('https://sinestro.mediamesh.com.br/api/pops/${widget.ponto.unique}'),
-      headers: {
+      Uri.parse('https://sinestro.mediamesh.com.br/api/pops/$unique'),
+      headers: const {
         'Content-Type': 'application/json; charset=UTF-8',
-        'Cookie':
-            'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
+        'Accept': 'application/json',
+        'Cookie': 'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
       },
-      body: jsonEncode({
-        "name": name,
-        "kind": kindMap[type],
-        "reference": reference,
-        "address": address,
-        "orientation": orientationMap[orientation],
-        "material": materialMap[material],
-        "facePosition": facePositionMap[facePosition],
-        "faceDescription": faceDescription,
-       // "lightSource": lightning,
-        "dimensions": dimensionsMap,
-       // "location": locationsMap,
-      }),
+      body: jsonEncode(payload),
     );
 
-    if (response.statusCode != 200) {
-      print(response.statusCode);
-      print(response.body);
-      throw Exception('Falha ao atualizar ponto: ${response.body}');
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      debugPrint("URL: https://sinestro.mediamesh.com.br/api/pops/$unique");
+      debugPrint("Status: ${response.statusCode}");
+      debugPrint("Body: ${response.body}");
+      throw Exception('Falha ao atualizar ponto (${response.statusCode}).');
     }
   }
 
   final _formKey = GlobalKey<FormState>();
 
+  String? _keyForValue(Map<String, String> map, String value) {
+    for (final e in map.entries) {
+      if (e.value == value) return e.key;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
+    uniqueController.text = widget.ponto.unique;
+    idController.text = widget.ponto.id;
     nameController.text = widget.ponto.name;
     referenceController.text = widget.ponto.reference;
     addressController.text = widget.ponto.address;
@@ -118,17 +146,17 @@ class _EditPopsState extends State<EditPops> {
     widthController.text = widget.ponto.dimensions.width.toString();
     heightController.text = widget.ponto.dimensions.height.toString();
     selectedUnity = widget.ponto.dimensions.unit;
-    
-    // Invertendo os mapas para preencher os dropdowns
-    selectedType = kindMap.entries.firstWhere((e) => e.value == widget.ponto.kind, orElse: () => const MapEntry("", "")).key;
-    selectedOrientation = orientationMap.entries.firstWhere((e) => e.value == widget.ponto.orientation, orElse: () => const MapEntry("", "")).key;
-    selectedMaterial = materialMap.entries.firstWhere((e) => e.value == widget.ponto.material, orElse: () => const MapEntry("", "")).key;
-    selectedFacePosition = facePositionMap.entries.firstWhere((e) => e.value == widget.ponto.facePosition, orElse: () => const MapEntry("", "")).key;
-    // selectedLightning = ... (precisa do campo correspondente no modelo 'Ponto')
+
+    selectedType = _keyForValue(kindMap, widget.ponto.kind);
+    selectedOrientation = _keyForValue(orientationMap, widget.ponto.orientation);
+    selectedMaterial = _keyForValue(materialMap, widget.ponto.material);
+    selectedFacePosition = _keyForValue(facePositionMap, widget.ponto.facePosition);
   }
 
   @override
   void dispose() {
+    uniqueController.dispose();
+    idController.dispose();
     nameController.dispose();
     addressController.dispose();
     widthController.dispose();
@@ -154,7 +182,6 @@ class _EditPopsState extends State<EditPops> {
               TextFormField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: "Nome do ponto", border: OutlineInputBorder()),
-                validator: (value) => (value == null || value.isEmpty) ? "Preencha o nome do ponto" : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -176,90 +203,83 @@ class _EditPopsState extends State<EditPops> {
                 controller: widthController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: "Largura", border: OutlineInputBorder()),
+                validator: (v) => (int.tryParse(v?.trim() ?? '') == null) ? "Informe um número válido" : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: heightController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: "Altura", border: OutlineInputBorder()),
+                validator: (v) => (int.tryParse(v?.trim() ?? '') == null) ? "Informe um número válido" : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedUnity,
-                decoration: const InputDecoration(labelText: "Selecione uma unidade", border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: "Unidade", border: OutlineInputBorder()),
                 items: ['cm', 'm'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (val) => setState(() => selectedUnity = val),
-                validator: (val) => val == null ? "Escolha uma unidade" : null,
+                validator: (v) => v == null ? "Selecione uma unidade" : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedType,
-                decoration: const InputDecoration(labelText: "Selecione um tipo", border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: "Tipo", border: OutlineInputBorder()),
                 items: ['Outdoor', 'Indoor', 'Elevador'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (val) => setState(() => selectedType = val),
-                validator: (val) => val == null ? "Escolha um tipo" : null,
+                validator: (v) => v == null ? "Selecione um tipo" : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedOrientation,
-                decoration: const InputDecoration(labelText: "Selecione uma orientação", border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: "Orientação", border: OutlineInputBorder()),
                 items: ['Vertical', 'Horizontal', 'Neutra'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (val) => setState(() => selectedOrientation = val),
-                validator: (val) => val == null ? "Escolha uma orientação" : null,
+                validator: (v) => v == null ? "Selecione uma orientação" : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedMaterial,
-                decoration: const InputDecoration(labelText: "Selecione um material", border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: "Material", border: OutlineInputBorder()),
                 items: ['Estático', 'Digital', 'Vinil'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (val) => setState(() => selectedMaterial = val),
-                validator: (val) => val == null ? "Escolha um material" : null,
+                validator: (v) => v == null ? "Selecione um material" : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedFacePosition,
-                decoration: const InputDecoration(labelText: "Selecione a posição da face", border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: "Posição da face", border: OutlineInputBorder()),
                 items: ['Frontal', 'Lateral', 'Em Ângulo'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (val) => setState(() => selectedFacePosition = val),
-                validator: (val) => val == null ? "Escolha uma posição" : null,
+                validator: (v) => v == null ? "Selecione a posição da face" : null,
               ),
-              const SizedBox(height: 16),
-             //DropdownButtonFormField<String>(
-               // value: selectedLightning,
-                //decoration: const InputDecoration(labelText: "Selecione a iluminação", border: OutlineInputBorder()),
-                //items: ['Direta (Refletor)', 'Interna (Backlight)', 'Nenhuma'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                //onChanged: (val) => setState(() => selectedLightning = val),
-               // validator: (val) => val == null ? "Escolha uma iluminação" : null,
-            //  ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     try {
-                      if (selectedUnity == null || selectedType == null || selectedOrientation == null || 
-                          selectedMaterial == null || selectedFacePosition == null) {
-                        throw Exception("Preencha todos os campos obrigatórios.");
-                      }
-
                       await updatePonto(
-                        name: nameController.text,
-                        reference: referenceController.text,
-                        address: addressController.text,
-                        faceDescription: faceDescriptionController.text,
-                        width: widthController.text,
-                        height: heightController.text,
+                        id: idController.text,
+                        unique: uniqueController.text,
+                        name: nameController.text.trim(),
+                        reference: referenceController.text.trim(),
+                        address: addressController.text.trim(),
+                        faceDescription: faceDescriptionController.text.trim(),
+                        width: widthController.text.trim(),
+                        height: heightController.text.trim(),
                         unit: selectedUnity!,
                         type: selectedType!,
                         orientation: selectedOrientation!,
                         material: selectedMaterial!,
                         facePosition: selectedFacePosition!,
+                        lightning: null, // passe aqui o mesmo valor usado no NewPops
                       );
-
+                      if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Ponto atualizado com sucesso!")),
                       );
-                      Navigator.pop(context, true); // Retorna true para indicar sucesso
+                      Navigator.pop(context, true);
                     } catch (e) {
+                      if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e")));
                     }
                   }

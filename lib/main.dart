@@ -6,6 +6,7 @@ import 'arquivos/arquivos.dart';
 import 'campanhas/campanhas.dart';
 import 'configuracoes/configuracoes.dart';
 import 'home/home.dart';
+import 'contratantes/new_contratante.dart';
 
 // import 'assets/';
 void main() {
@@ -51,6 +52,7 @@ class MyApp extends StatelessWidget {
         '/campanhas': (context) => const Campanhas(),
         '/configuracoes': (context) => const Configuracoes(),
         '/home': (context) => const Home(),
+        '/new_contratante': (context) => NewContratante(),
       },
     );
   }

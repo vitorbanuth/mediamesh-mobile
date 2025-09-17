@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-// Import the Contratante model
-import 'contratante_model.dart'; // <-- create this file with the class above
+import 'contratante_model.dart';
 
 class Contratantes extends StatefulWidget {
   const Contratantes({super.key});
@@ -21,25 +20,39 @@ class _ContratantesState extends State<Contratantes> {
     futureContratantes = fetchContratantes();
   }
 
-  Future<List<Contratante>> fetchContratantes() async {
-    final response = await http.get(
-      Uri.parse('https://sinestro.mediamesh.com.br/api/campaingns'),
+ Future<List<Contratante>> fetchContratantes() async {
+  final response = await http.get(
+    Uri.parse('https://sinestro.mediamesh.com.br/api/advertisers'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer {{TOKEN}}', // troque pelo token válido
+        'Cookie':
+            'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
       },
-    );
+  );
 
-      print("Status code: ${response.statusCode}");
-      print("Body: ${response.body}");  
+  print("Status code: ${response.statusCode}");
+  print("Body: ${response.body}");
 
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonList = jsonDecode(response.body);
+  if (response.statusCode == 200) {
+    final decoded = jsonDecode(response.body);
+
+    if (decoded is Map<String, dynamic> && decoded.containsKey("data")) {
+      final List<dynamic> jsonList = decoded["data"];
       return jsonList.map((json) => Contratante.fromJson(json)).toList();
-    } else {
-      throw Exception('Erro ao carregar contratantes: ${response.body}');
     }
+
+    if (decoded is List) {
+      return decoded.map((json) => Contratante.fromJson(json)).toList();
+    }
+
+    throw Exception("Formato inesperado do JSON: $decoded");
+  } else {
+    throw Exception(
+      'Erro ao carregar contratantes [${response.statusCode}]: ${response.body}',
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

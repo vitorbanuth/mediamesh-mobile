@@ -6,7 +6,8 @@ import 'arquivos/arquivos.dart';
 import 'campanhas/campanhas.dart';
 import 'configuracoes/configuracoes.dart';
 import 'tasks/tasks.dart';
-import 'home/home.dart';
+// import 'pontos/list_pop.dart';
+// import 'home/home.dart';
 
 // import 'assets/';
 void main() {
@@ -32,17 +33,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Mediamesh',
       theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blue.shade900,
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-          iconTheme: IconThemeData(color: Colors.white),
-        ),
         colorScheme: ColorScheme(
-          primary: Colors.white,
+          primary: Colors.black,
           onPrimary: Colors.white,
           secondary: Colors.blue.shade700,
           onSecondary: Colors.white,
@@ -51,6 +43,15 @@ class MyApp extends StatelessWidget {
           surface: Colors.grey.shade200,
           onSurface: Colors.black,
           brightness: Brightness.light,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.blue.shade900,
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+          iconTheme: IconThemeData(color: Colors.white),
         ),
       ),
       home: const MyHomePage(title: 'Mediamesh'),
@@ -62,7 +63,8 @@ class MyApp extends StatelessWidget {
         '/arquivos': (context) => const Arquivos(),
         '/campanhas': (context) => const Campanhas(),
         '/configuracoes': (context) => const Configuracoes(),
-        '/home': (context) => const Home(),
+        // '/listagempontos': (context) => const ListPop()
+        // '/home': (context) => const Home(),
       },
     );
   }
@@ -82,12 +84,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.onPrimary,
         iconTheme: IconThemeData(color: Colors.black),
         title: Image.asset('assets/image.png', height: 40),
       ),
       drawer: NavigationDrawer(
-        
         onDestinationSelected: (index) {
           final route = drawerRoutes[index];
           if (route != null) {

@@ -357,9 +357,6 @@ class _NewPopsState extends State<NewPops> {
                         context,
                       ).showSnackBar(SnackBar(content: Text("Erro: $e")));
                     }
-
-                    // Volta para a tela anterior
-                    // Navigator.pop(context);
                   }
                 },
                 style: ElevatedButton.styleFrom(

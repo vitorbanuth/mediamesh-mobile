@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-// import 'package:mediamesh/contratantes/new_contratante.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:mediamesh/contratantes/list_contratante.dart';
 
 import 'contratante_model.dart';
 
@@ -30,9 +31,6 @@ class _ContratantesState extends State<Contratantes> {
             'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
       },
     );
-
-    print("Status code: ${response.statusCode}");
-    print("Body: ${response.body}");
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -80,7 +78,7 @@ class _ContratantesState extends State<Contratantes> {
                   const Positioned(
                     right: -5,
                     bottom: 18,
-                    child: Icon(Icons.add, size: 18,color: Colors.black,),
+                    child: Icon(Icons.add, size: 18, color: Colors.white),
                   ),
                 ],
               ),
@@ -115,56 +113,48 @@ class _ContratantesState extends State<Contratantes> {
               final c = contratantes[index];
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  leading: Icon(Icons.business_center),
-                  title: Text(c.name),
-                  subtitle: Text("${c.contact.name} • ${c.contact.email}"),
-                  // trailing: Text(c.sector),
-                  // onTap: () {
-                  //   showDialog(
-                  //     context: context,
-                  //     builder: (_) => AlertDialog(
-                  //       title: Text(c.name),
-                  //       content: Column(
-                  //         mainAxisSize: MainAxisSize.min,
-                  //         crossAxisAlignment: CrossAxisAlignment.start,
-                  //         children: [
-                  //           Text("CNPJ: ${c.taxId}"),
-                  //           Text("Endereço: ${c.address}"),
-                  //           Text("CEP: ${c.cep}"),
-                  //           const Divider(),
-                  //           Text("Contato: ${c.contact.name}"),
-                  //           Text("Email: ${c.contact.email}"),
-                  //           Text("Telefone: ${c.contact.phone}"),
-                  //         ],
-                  //       ),
-                  //       actions: [
-                  //         TextButton(
-                  //           child: const Text("Fechar"),
-                  //           onPressed: () => Navigator.pop(context),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   );
-                  // },
+                child: Slidable(
+                  key: ValueKey(c.taxId),
+                  endActionPane: ActionPane(
+                    extentRatio: 0.70,
+
+                    motion: const DrawerMotion(),
+                    children: [
+                      SlidableAction(
+                        onPressed: (context) async {},
+                        backgroundColor: Colors.blue,
+                        icon: Icons.edit,
+                      ),
+                      SlidableAction(
+                        onPressed: (context) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ListContratante(contratante: c),
+                              ),
+                            );
+                        },
+                        backgroundColor: Colors.deepPurple,
+                        icon: Icons.remove_red_eye,
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    iconColor: Colors.blue.shade900,
+                    leading: Icon(Icons.business_center),
+                    title: Text(c.name),
+                    subtitle: Text("${c.contact.name} • ${c.contact.email}"),
+                  ),
                 ),
               );
             },
           );
         },
       ),
-
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     Navigator.pushNamed(context, "/new_contratante").then(
-      //       (_) => setState(() {
-      //         futureContratantes = fetchContratantes();
-      //       }),
-      //     );
-      //   },
-      //   backgroundColor: Colors.blue[900],
-      //   child: const Icon(Icons.add),
-      // ),
     );
   }
 }

@@ -7,7 +7,6 @@ import 'package:mediamesh/pontos/edit_pops.dart';
 import 'package:mediamesh/pontos/new_pops.dart';
 import 'pop.dart';
 
-
 class Pontos extends StatefulWidget {
   const Pontos({super.key});
 
@@ -430,60 +429,59 @@ class _PontosState extends State<Pontos> {
               itemCount: lista.length,
               itemBuilder: (context, index) {
                 final ponto = lista[index];
-                return Slidable(
-                  key: ValueKey(ponto.id),
-                  endActionPane: ActionPane(
-                    extentRatio: 0.70,
+                return Card(
+                  child: Slidable(
+                    key: ValueKey(ponto.id),
+                    endActionPane: ActionPane(
+                      extentRatio: 0.70,
 
-                    motion: const DrawerMotion(),
-                    children: [
-                      SlidableAction(
-                        onPressed: (context) async {
-                          final pontoAtualizado = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditPops(ponto: ponto),
-                            ),
-                          );
+                      motion: const DrawerMotion(),
+                      children: [
+                        SlidableAction(
+                          onPressed: (context) async {
+                            final pontoAtualizado = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditPops(ponto: ponto),
+                              ),
+                            );
 
-                          if (pontoAtualizado == true) {
-                            setState(() {
-                              pontos = fetchPontos();
-                            });
-                          }
-                        },
-                        backgroundColor: Colors.blue,
-                        icon: Icons.edit,
-                      ),
-                      SlidableAction(
-                        onPressed: (context) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ListPop(ponto: ponto),
-                            ),
-                          );
-                        },
-                        backgroundColor: Colors.deepPurple,
-                        icon: Icons.remove_red_eye,
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    leading: const Icon(Icons.location_on),
-                    iconColor: Colors.red.shade300,
-                    title: Text(ponto.name),
-                    subtitle: Text(ponto.reference),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
+                            if (pontoAtualizado == true) {
+                              setState(() {
+                                pontos = fetchPontos();
+                              });
+                            }
+                          },
+                          backgroundColor: Colors.blue,
+                          icon: Icons.edit,
+                        ),
+                        SlidableAction(
+                          onPressed: (context) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ListPop(ponto: ponto),
+                              ),
+                            );
+                          },
+                          backgroundColor: Colors.deepPurple,
+                          icon: Icons.remove_red_eye,
+                        ),
+                      ],
                     ),
-
-                    // minTileHeight: 32,
+                    child: ListTile(
+                      leading: const Icon(Icons.location_on),
+                      iconColor: Colors.red.shade300,
+                      title: Text(ponto.name),
+                      subtitle: Text(ponto.reference),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                    ),
                   ),
                 );
               },
-              // separatorBuilder: (context, index) => const Divider(),
             );
           } else {
             return const Center(child: Text("Nenhum ponto encontrado"));

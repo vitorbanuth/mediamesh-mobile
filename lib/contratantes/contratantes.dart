@@ -22,6 +22,8 @@ class _ContratantesState extends State<Contratantes> {
     futureContratantes = fetchContratantes();
   }
 
+  late Future<List<Contratante>> contratantes;
+
   Future<List<Contratante>> fetchContratantes() async {
     final response = await http.get(
       Uri.parse('https://sinestro.mediamesh.com.br/api/advertisers'),
@@ -52,9 +54,171 @@ class _ContratantesState extends State<Contratantes> {
     }
   }
 
+  final TextEditingController nomeController = TextEditingController();
+  String? selectedSector;
+
+  final Map<String, String> sectorMap = {
+    "Privado": "PRIVATE",
+    "Público": "PUBLIC",
+  };
+
+  Future<List<Contratante>> filterContratantes(
+    String? nomeText,
+    String? sectorText,
+  ) async {
+    Map<String, String> queryParams = {};
+
+    if (nomeText != null && nomeText.trim().isNotEmpty) {
+      queryParams['filter[_name]'] = 'like';
+      queryParams['filter[name]'] = nomeText.trim();
+    }
+
+    final sectorValue = (sectorText != null && sectorText.isNotEmpty)
+        ? (sectorMap[sectorText] ?? sectorText)
+        : null;
+    if (sectorValue != null && sectorValue.isNotEmpty) {
+      queryParams['filter[_sector]'] = 'like';
+      queryParams['filter[sector]'] = sectorValue;
+    }
+
+    final uri = Uri.https(
+      'sinestro.mediamesh.com.br',
+      '/api/advertisers',
+      queryParams,
+    );
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie':
+            'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is Map<String, dynamic> && decoded.containsKey("data")) {
+        final List<dynamic> jsonList = decoded["data"];
+        return jsonList.map((json) => Contratante.fromJson(json)).toList();
+      }
+
+      if (decoded is List) {
+        return decoded.map((json) => Contratante.fromJson(json)).toList();
+      }
+
+      throw Exception("Formato inesperado do JSON: $decoded");
+    } else {
+      throw Exception(
+        'Erro ao carregar contratantes [${response.statusCode}]: ${response.body}',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      endDrawer: Drawer(
+        backgroundColor: Colors.grey.shade200,
+        child: ListView(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    children: [TextSpan(text: "Filtrar Contratantes")],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: TextFormField(
+                  controller: nomeController,
+                  decoration: const InputDecoration(
+                    labelText: "Nome",
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: "Setor",
+                    border: OutlineInputBorder(),
+                    iconColor: Colors.blueAccent,
+                  ),
+                  items: ['Público', 'Privado']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedSector = val),
+
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: Builder(
+                  builder: (drawerContext) => ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        futureContratantes = filterContratantes(nomeController.text, selectedSector);
+
+                        Navigator.of(drawerContext).pop();
+                        setState(() {
+                          selectedSector = null;
+                          nomeController.clear();
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          drawerContext,
+                        ).showSnackBar(SnackBar(content: Text("Erro: $e")));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text(
+                      "Pesquisar",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
         title: const Text("Contratantes"),
         centerTitle: true,
@@ -84,13 +248,13 @@ class _ContratantesState extends State<Contratantes> {
               ),
             ),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(Icons.filter_alt_outlined, size: 30), // Maleta
-              ],
+
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.filter_alt_outlined, size: 28),
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer();
+              },
             ),
           ),
         ],
@@ -128,11 +292,11 @@ class _ContratantesState extends State<Contratantes> {
                       SlidableAction(
                         onPressed: (context) {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ListContratante(contratante: c),
-                              ),
-                            );
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ListContratante(contratante: c),
+                            ),
+                          );
                         },
                         backgroundColor: Colors.deepPurple,
                         icon: Icons.remove_red_eye,

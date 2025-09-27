@@ -7,6 +7,7 @@ import 'campanhas/campanhas.dart';
 import 'configuracoes/configuracoes.dart';
 import 'tasks/tasks.dart';
 import 'contratantes/new_contratante.dart';
+import 'agencias/new_agencia.dart';
 // import 'pontos/list_pop.dart';
 // import 'home/home.dart';
 
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
         '/campanhas': (context) => const Campanhas(),
         '/configuracoes': (context) => const Configuracoes(),
         '/new_contratante': (context) => NewContratante(),
+        '/new_agencia': (context) => NewAgencia(),
         // '/listagempontos': (context) => const ListPop()
         // '/home': (context) => const Home(),
       },

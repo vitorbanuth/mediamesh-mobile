@@ -27,7 +27,7 @@ class _AgenciasState extends State<Agencias> {
       headers: {
         'Content-Type': 'application/json',
         'Cookie':
-            'sid=s%3Aj%3A%7B%22id%22%3A%229E4DQBPR%22%2C%22apiVersion%22%3A%22993fda5c%22%2C%22account%22%3A%7B%22taxId%22%3A%2210276433000128%22%2C%22alias%22%3A%22devs%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22name%22%3A%22Ksmz%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%7D%7D.ovxaACdIZDF7tU3Z%2BgPfGTJXdKP6QWWieeyi%2FbD5nms',
+            'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
       },
     );
 
@@ -85,7 +85,7 @@ class _AgenciasState extends State<Agencias> {
       uri,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer {{TOKEN}}',
+        'Cookie': 'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
       },
     );
 
@@ -108,6 +108,93 @@ class _AgenciasState extends State<Agencias> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      endDrawer: Drawer(
+        backgroundColor: Colors.grey.shade200,
+        child: ListView(
+          children: [
+            const Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "Filtrar Agências",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: TextFormField(
+                  controller: nomeController,
+                  decoration: const InputDecoration(
+                    labelText: "Nome",
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: "Setor",
+                    border: OutlineInputBorder(),
+                    iconColor: Colors.blueAccent,
+                  ),
+                  items: ['Público', 'Privado']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedSector = val),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: Builder(
+                  builder: (drawerContext) => ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        futureAgencias = filterAgencias(
+                          nomeController.text,
+                          selectedSector,
+                        );
+                      });
+                      Navigator.of(drawerContext).pop();
+                      nomeController.clear();
+                      selectedSector = null;
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text(
+                      "Pesquisar",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
         title: const Text("Agências"),
         centerTitle: true,

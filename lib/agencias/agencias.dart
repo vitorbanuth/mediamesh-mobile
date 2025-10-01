@@ -146,28 +146,6 @@ class _AgenciasState extends State<Agencias> {
               alignment: Alignment.center,
               child: SizedBox(
                 width: 250,
-                child: DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: "Setor",
-                    border: OutlineInputBorder(),
-                    iconColor: Colors.blueAccent,
-                  ),
-                  items: ['Público', 'Privado']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (val) => setState(() => selectedSector = val),
-                  icon: const Icon(
-                    Icons.arrow_drop_down,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.center,
-              child: SizedBox(
-                width: 250,
                 child: Builder(
                   builder: (drawerContext) => ElevatedButton(
                     onPressed: () {

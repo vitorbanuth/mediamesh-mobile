@@ -15,9 +15,6 @@ class ListAgencia extends StatelessWidget {
         child: ListView(
           children: [
             ListTile(title: const Text("CNPJ"), subtitle: Text(agencia.taxId)),
-            ListTile(title: const Text("Endereço"), subtitle: Text(agencia.address)),
-            ListTile(title: const Text("CEP"), subtitle: Text(agencia.cep)),
-            ListTile(title: const Text("Setor"), subtitle: Text(agencia.sector)),
             ListTile(title: const Text("Contato"), subtitle: Text(agencia.contact.name)),
             ListTile(title: const Text("Email"), subtitle: Text(agencia.contact.email)),
             ListTile(title: const Text("Telefone"), subtitle: Text(agencia.contact.phone)),

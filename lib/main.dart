@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mediamesh/tasks/new_task.dart';
 import 'pontos/pops.dart';
 import 'contratantes/contratantes.dart';
 import 'agencias/agencias.dart';
@@ -8,6 +9,7 @@ import 'configuracoes/configuracoes.dart';
 import 'tasks/tasks.dart';
 import 'contratantes/new_contratante.dart';
 import 'agencias/new_agencia.dart';
+// import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'pontos/list_pop.dart';
 // import 'home/home.dart';
 
@@ -61,12 +63,13 @@ class MyApp extends StatelessWidget {
         '/pontos': (context) => const Pontos(),
         '/contratantes': (context) => const Contratantes(),
         '/agencias': (context) => const Agencias(),
-        '/tarefas': (context) => const Tarefas(),
+        '/tarefas': (context) => const Tasks(),
         '/arquivos': (context) => const Arquivos(),
         '/campanhas': (context) => const Campanhas(),
         '/configuracoes': (context) => const Configuracoes(),
         '/new_contratante': (context) => NewContratante(),
         '/new_agencia': (context) => NewAgencia(),
+        '/new_task': (context) => NewTask(),
         // '/listagempontos': (context) => const ListPop()
         // '/home': (context) => const Home(),
       },

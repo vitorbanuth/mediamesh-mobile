@@ -1,17 +1,11 @@
 class Agencia {
   final String taxId;
   final String name;
-  final String sector;
-  final String address;
-  final String cep;
   final Contact contact;
 
   Agencia({
     required this.taxId,
     required this.name,
-    required this.sector,
-    required this.address,
-    required this.cep,
     required this.contact,
   });
 
@@ -19,9 +13,6 @@ class Agencia {
     return Agencia(
       taxId: json["taxId"] ?? "",
       name: json["name"] ?? "",
-      sector: json["sector"] ?? "",
-      address: json["address"] ?? "",
-      cep: json["cep"] ?? "",
       contact: Contact.fromJson(json["contact"] ?? {}),
     );
   }

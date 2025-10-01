@@ -14,14 +14,9 @@ class _NewAgenciaState extends State<NewAgencia> {
 
   final TextEditingController cnpjController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController cepController = TextEditingController();
   final TextEditingController contactNameController = TextEditingController();
   final TextEditingController contactEmailController = TextEditingController();
   final TextEditingController contactPhoneController = TextEditingController();
-
-  String? selectedSector;
-  final Map<String, String> sectorMap = {"Público": "PUBLIC", "Privado": "PRIVATE"};
 
   Future<void> createAgencia() async {
     final response = await http.post(
@@ -34,14 +29,11 @@ class _NewAgenciaState extends State<NewAgencia> {
       body: jsonEncode({
         "taxId": cnpjController.text,
         "name": nameController.text,
-        "sector": sectorMap[selectedSector],
         "contact": {
           "name": contactNameController.text,
           "email": contactEmailController.text,
           "phone": contactPhoneController.text,
         },
-        "address": addressController.text,
-        "cep": cepController.text,
       }),
     );
 
@@ -78,27 +70,8 @@ class _NewAgenciaState extends State<NewAgencia> {
                 validator: (v) => v!.isEmpty ? "Preencha o nome" : null,
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: "Setor"),
-                items: ["Público", "Privado"]
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (val) => setState(() => selectedSector = val),
-                validator: (v) => v == null ? "Selecione o setor" : null,
-              ),
+              
               const SizedBox(height: 16),
-              TextFormField(
-                controller: addressController,
-                decoration: const InputDecoration(labelText: "Endereço"),
-                validator: (v) => v!.isEmpty ? "Preencha o endereço" : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: cepController,
-                decoration: const InputDecoration(labelText: "CEP"),
-                validator: (v) => v!.isEmpty ? "Preencha o CEP" : null,
-              ),
-              const Divider(),
               const Text("Contato", style: TextStyle(fontWeight: FontWeight.bold)),
               TextFormField(
                 controller: contactNameController,

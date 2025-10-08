@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:mediamesh/tasks/new_task.dart';
 import 'pontos/pops.dart';
 import 'contratantes/contratantes.dart';
@@ -9,9 +12,9 @@ import 'configuracoes/configuracoes.dart';
 import 'tasks/tasks.dart';
 import 'contratantes/new_contratante.dart';
 import 'agencias/new_agencia.dart';
+import 'home.dart';
 // import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'pontos/list_pop.dart';
-// import 'home/home.dart';
 
 // import 'assets/';
 void main() {
@@ -87,6 +90,32 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Future<Home> fetchHome() async {
+    final response = await http.get(
+      Uri.parse('https://sinestro.mediamesh.com.br/api/home'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie':
+            'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return Home.fromJson(jsonResponse);
+    } else {
+      throw Exception('Erro ao carregar dados');
+    }
+  }
+
+  late Future<Home> homeInfos;
+
+  @override
+  void initState() {
+    super.initState();
+    homeInfos = fetchHome();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,10 +194,223 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: const Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center),
+
+      body: FutureBuilder<Home>(
+        future: homeInfos,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Erro: ${snapshot.error}"));
+          } else if (snapshot.hasData) {
+            print(snapshot.data);
+            final home = snapshot.data!;
+            return Column(
+              children: [
+
+                SizedBox(height: 15),
+
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Text(
+                    "Visão Geral",
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 15),
+
+                
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 100),
+                      width: double.infinity,
+                      margin: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade700,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.grey,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+
+                      // O conteúdo
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 15),
+
+                          Row(
+                            children: [
+                              Icon(Icons.add_circle, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                "Novas Campanhas: ${home.campaignStatus.newStatus.toString()}",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 15),
+                        ],
+                      ),
+                    ),
+                  ),
+                
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 100),
+                      width: double.infinity,
+                      margin: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade400,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.grey,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+
+                      // O conteúdo
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 15),
+
+                          Row(
+                            children: [
+                              Icon(Icons.upload, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                "Campanhas Publicadas: ${home.campaignStatus.published.toString()}",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 15),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 100),
+                      width: double.infinity,
+                      margin: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade900,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.grey,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+
+                      // O conteúdo
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 15),
+
+                          Row(
+                            children: [
+                              Icon(Icons.check_box_outlined, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                "Campanhas Finalizadas: ${home.campaignStatus.done.toString()}",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 15),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 100),
+                      width: double.infinity,
+                      margin: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade700,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.grey,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+
+                      // O conteúdo
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 15),
+
+                          Row(
+                            children: [
+                              Icon(Icons.attach_money, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                "Campanhas Faturadas: ${home.campaignStatus.invoiced.toString()}",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 15),
+                        ],
+                      ),
+                    ),
+                  ),
+                
+              ],
+            );
+          } else {
+            return const Center(child: Text("Nenhum dado encontrado"));
+          }
+        }, // This trailing comma makes auto-formatting nicer for build methods.
       ),
-      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

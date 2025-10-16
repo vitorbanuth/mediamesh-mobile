@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'task_model.dart';
+import 'package:intl/intl.dart';
 
 class EditTask extends StatefulWidget {
   final Task task;
@@ -14,6 +15,7 @@ class EditTask extends StatefulWidget {
 
 class _EditTaskState extends State<EditTask> {
   final TextEditingController uniqueController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
@@ -21,6 +23,7 @@ class _EditTaskState extends State<EditTask> {
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
   String? selectedStatus;
+  final dateFormat = DateFormat('dd/MM/yyyy');
 
   final Map<String, String> statusMap = {
     "Nova": "NEW",
@@ -30,38 +33,52 @@ class _EditTaskState extends State<EditTask> {
 
   final _formKey = GlobalKey<FormState>();
 
+  String formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty) return "";
+    try {
+      final parsedDate = DateTime.parse(rawDate); // converte a string ISO
+      return "${parsedDate.day.toString().padLeft(2, '0')}/"
+          "${parsedDate.month.toString().padLeft(2, '0')}/"
+          "${parsedDate.year}";
+    } catch (e) {
+      return rawDate;
+    }
+  }
+
   Future<void> updateTask({
     required String unique,
+    required String title,
     required String description,
-    required DateTime startDate,
-    required DateTime endDate,
+    required String startDate,
+    required String endDate,
     required String assignee,
     required String status,
   }) async {
-    
-    print('unique = ${widget.task.unique}');
     final response = await http.post(
-      Uri.parse('https://sinestro.mediamesh.com.br/api/tasks/${widget.task.unique}'),
+      Uri.parse(
+        'https://sinestro.mediamesh.com.br/api/tasks/${widget.task.unique}',
+      ),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Cookie':
-        'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
+            'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
       },
       body: jsonEncode({
         "unique": widget.task.unique,
-        "description": description,
-        "status": statusMap[status],
+        "title": titleController.text,
+        "description": descriptionController.text,
+        "status": statusMap[selectedStatus],
         "startDate": selectedStartDate?.toIso8601String(),
         "endDate": selectedEndDate?.toIso8601String(),
-        "assignee": assignee,
+        "assignee": assigneeController.text,
       }),
     );
 
     if (response.statusCode == 200) {
       final result = jsonDecode(response.body);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Tarefa atualizada: ${result['name']}")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Tarefa atualizada com sucesso!")));
       Navigator.pop(context, result);
     } else {
       print(response.statusCode);
@@ -70,16 +87,17 @@ class _EditTaskState extends State<EditTask> {
     }
   }
 
-@override
+  @override
   void initState() {
     super.initState();
+    titleController.text = widget.task.title;
     descriptionController.text = widget.task.description;
     assigneeController.text = widget.task.assignee;
     startDateController.text = widget.task.startDate;
     endDateController.text = widget.task.endDate;
+    selectedStartDate = dateFormat.parse(widget.task.startDate);
+    selectedEndDate = dateFormat.parse(widget.task.endDate);
   }
-
-  
 
   @override
   void dispose() {
@@ -104,15 +122,27 @@ class _EditTaskState extends State<EditTask> {
           child: ListView(
             children: [
               TextFormField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: "Título",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
                 controller: descriptionController,
                 decoration: const InputDecoration(
                   labelText: "Descrição",
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Atualize a Descrição" : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? "Atualize a Descrição"
+                    : null,
               ),
+
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: startDateController,
                 readOnly: true,
@@ -126,21 +156,12 @@ class _EditTaskState extends State<EditTask> {
                     initialDate: DateTime.now(),
                     firstDate: DateTime(2000),
                     lastDate: DateTime(2100),
-                    // locale: const Locale("pt", "BR"),
                   );
 
-                  if (pickedDate != null) {
-                    selectedStartDate = pickedDate;
+                  startDateController.text = formatDate(pickedDate.toString());
 
-                    // Mostra no campo no formato brasileiro
-                    startDateController.text =
-                    "${pickedDate.day.toString().padLeft(2, '0')}/"
-                        "${pickedDate.month.toString().padLeft(2, '0')}/"
-                        "${pickedDate.year}";
-                  }
+                  selectedStartDate = pickedDate;
                 },
-                validator: (value) =>
-                value == null || value.isEmpty ? "Selecione a data" : null,
               ),
 
               const SizedBox(height: 16),
@@ -158,21 +179,12 @@ class _EditTaskState extends State<EditTask> {
                     initialDate: DateTime.now(),
                     firstDate: DateTime(2000),
                     lastDate: DateTime(2100),
-                    // locale: const Locale("pt", "BR"),
                   );
 
-                  if (pickedDate != null) {
-                    selectedEndDate = pickedDate;
+                  endDateController.text = formatDate(pickedDate.toString());
 
-                    // Mostra no campo no formato brasileiro
-                    endDateController.text =
-                    "${pickedDate.day.toString().padLeft(2, '0')}/"
-                        "${pickedDate.month.toString().padLeft(2, '0')}/"
-                        "${pickedDate.year}";
-                  }
+                  selectedEndDate = pickedDate;
                 },
-                validator: (value) =>
-                value == null || value.isEmpty ? "Selecione a data" : null,
               ),
 
               const SizedBox(height: 16),
@@ -206,12 +218,12 @@ class _EditTaskState extends State<EditTask> {
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     try {
-          
                       await updateTask(
                         unique: uniqueController.text,
+                        title: titleController.text,
                         description: descriptionController.text,
-                        startDate: selectedStartDate!,
-                        endDate: selectedEndDate!,
+                        startDate: startDateController.text,
+                        endDate: endDateController.text,
                         status: selectedStatus!,
                         assignee: assigneeController.text,
                       );

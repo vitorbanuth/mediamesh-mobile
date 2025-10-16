@@ -7,7 +7,6 @@ import 'package:mediamesh/tasks/list_task.dart';
 
 import 'task_model.dart';
 
-
 class Tasks extends StatefulWidget {
   const Tasks({super.key});
 
@@ -24,7 +23,6 @@ class _TasksState extends State<Tasks> {
     futureTasks = fetchTasks();
   }
 
-  
   Future<List<Task>> fetchTasks() async {
     final response = await http.get(
       Uri.parse('https://sinestro.mediamesh.com.br/api/tasks'),
@@ -55,7 +53,7 @@ class _TasksState extends State<Tasks> {
     }
   }
 
-  void deleteTask(String uniqueId) async {
+  Future<void> deleteTask(String uniqueId) async {
     final response = await http.delete(
       Uri.parse('https://sinestro.mediamesh.com.br/api/tasks/$uniqueId'),
       headers: {
@@ -85,8 +83,6 @@ class _TasksState extends State<Tasks> {
     }
   }
 
-  
-
   final TextEditingController descriptionController = TextEditingController();
 
   String? selectedStatus;
@@ -97,11 +93,7 @@ class _TasksState extends State<Tasks> {
     "Finalizada": "DONE",
   };
 
-  Future<List<Task>> filterTasks(
-    
-    String? statusText,
-
-  ) async {
+  Future<List<Task>> filterTasks(String? statusText) async {
     Map<String, String> queryParams = {};
 
     final statusValue = (statusText != null && statusText.isNotEmpty)
@@ -172,8 +164,6 @@ class _TasksState extends State<Tasks> {
             ),
 
             const SizedBox(height: 16),
-
-            
 
             const SizedBox(height: 16),
 
@@ -250,7 +240,7 @@ class _TasksState extends State<Tasks> {
                 }),
               );
             },
-            icon: Icon(Icons.assignment_add)
+            icon: Icon(Icons.assignment_add),
           ),
 
           Builder(
@@ -264,8 +254,6 @@ class _TasksState extends State<Tasks> {
         ],
       ),
       body: FutureBuilder<List<Task>>(
-
-        
         future: futureTasks,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -292,18 +280,16 @@ class _TasksState extends State<Tasks> {
                     children: [
                       SlidableAction(
                         onPressed: (context) async {
-                          final result = await Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  EditTask(task: t),
+                              builder: (context) => EditTask(task: t),
                             ),
                           );
-                          
-                            setState(() {
-                              futureTasks = fetchTasks();
-                            });
-                          
+
+                          setState(() {
+                            futureTasks = fetchTasks();
+                          });
                         },
                         backgroundColor: Colors.blue,
                         icon: Icons.edit,
@@ -323,7 +309,7 @@ class _TasksState extends State<Tasks> {
 
                       SlidableAction(
                         onPressed: (context) async {
-                          deleteTask(t.unique);
+                          await deleteTask(t.unique);
                           setState(() {
                             futureTasks = fetchTasks();
                           });
@@ -340,7 +326,7 @@ class _TasksState extends State<Tasks> {
                     ),
                     iconColor: Colors.blue.shade900,
                     leading: Icon(Icons.business_center),
-                    title: Text(t.description),
+                    title: Text(t.title),
                     subtitle: Text("${t.status} • Termina: ${t.endDate}"),
                   ),
                 ),

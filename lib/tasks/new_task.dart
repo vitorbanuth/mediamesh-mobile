@@ -10,6 +10,7 @@ class NewTask extends StatefulWidget {
 }
 
 class _NewTaskState extends State<NewTask> {
+  final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
@@ -27,6 +28,7 @@ class _NewTaskState extends State<NewTask> {
   final _formKey = GlobalKey<FormState>();
 
   Future<void> createTask({
+    required String title,
     required String description,
     required DateTime startDate,
     required DateTime endDate,
@@ -41,6 +43,7 @@ class _NewTaskState extends State<NewTask> {
             'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
       },
       body: jsonEncode({
+        "title": title,
         "description": description,
         "status": statusMap[status],
         "startDate": selectedStartDate?.toIso8601String(),
@@ -52,7 +55,7 @@ class _NewTaskState extends State<NewTask> {
     if (response.statusCode == 200) {
       final result = jsonDecode(response.body);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Tarefa criada: ${result['name']}")),
+        SnackBar(content: Text("Tarefa criada com sucesso!")),
       );
       Navigator.pop(context, result);
     } else {
@@ -64,6 +67,7 @@ class _NewTaskState extends State<NewTask> {
 
   @override
   void dispose() {
+    titleController.dispose();
     descriptionController.dispose();
     startDateController.dispose();
     endDateController.dispose();
@@ -84,6 +88,20 @@ class _NewTaskState extends State<NewTask> {
           key: _formKey,
           child: ListView(
             children: [
+
+              TextFormField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: "Título",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) => value == null || value.isEmpty
+                    ? "Preencha o Título"
+                    : null,
+              ),
+
+              const SizedBox(height: 16),
+
               TextFormField(
                 controller: descriptionController,
                 decoration: const InputDecoration(
@@ -123,8 +141,6 @@ class _NewTaskState extends State<NewTask> {
                         "${pickedDate.year}";
                   }
                 },
-                validator: (value) =>
-                    value == null || value.isEmpty ? "Selecione a data" : null,
               ),
 
               const SizedBox(height: 16),
@@ -142,7 +158,6 @@ class _NewTaskState extends State<NewTask> {
                     initialDate: DateTime.now(),
                     firstDate: DateTime(2000),
                     lastDate: DateTime(2100),
-                    // locale: const Locale("pt", "BR"),
                   );
 
                   if (pickedDate != null) {
@@ -155,8 +170,6 @@ class _NewTaskState extends State<NewTask> {
                         "${pickedDate.year}";
                   }
                 },
-                validator: (value) =>
-                    value == null || value.isEmpty ? "Selecione a data" : null,
               ),
 
               const SizedBox(height: 16),
@@ -191,6 +204,7 @@ class _NewTaskState extends State<NewTask> {
                   if (_formKey.currentState!.validate()) {
                     try {
                       await createTask(
+                        title: titleController.text,
                         description: descriptionController.text,
                         startDate: selectedStartDate!,
                         endDate: selectedEndDate!,

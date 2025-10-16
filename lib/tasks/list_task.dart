@@ -10,11 +10,15 @@ class ListTask extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(task.description)),
+      appBar: AppBar(title: Text(task.title)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
+            ListTile(
+              title: const Text("Descrição"),
+              subtitle: Text(task.description),
+            ),
             ListTile(
               title: const Text("Data de inicio"),
               subtitle: Text(task.startDate),

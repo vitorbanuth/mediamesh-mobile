@@ -1,5 +1,6 @@
 class Task {
   final String unique;
+  final String title;
   final String description;
   final String startDate;
   final String endDate;
@@ -8,6 +9,7 @@ class Task {
 
   Task({
     required this.unique,
+    required this.title,
     required this.description,
     required this.startDate,
     required this.endDate,
@@ -45,6 +47,7 @@ class Task {
 
     return Task(
       unique: json["unique"] ?? "",
+      title: json["title"] ?? "",
       description: json["description"] ?? "",
       startDate: formatDate(json["startDate"] ?? ""),
       endDate: formatDate(json["endDate"] ?? ""),

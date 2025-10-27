@@ -5,6 +5,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:http/http.dart' as http;
 import 'package:mediamesh/campanhas/list_campanha.dart';
 import 'campanha.dart';
+import 'list_campanha_pontos.dart';
 
 class Campanhas extends StatefulWidget {
   const Campanhas({super.key});
@@ -78,83 +79,6 @@ class _CampanhasState extends State<Campanhas> {
 
             const SizedBox(height: 16),
 
-            // Align(
-            //   alignment: Alignment.center,
-            //   child: SizedBox(
-            //     width: 250,
-            //     child: TextFormField(
-            //       controller: nomeController,
-            //       decoration: const InputDecoration(
-            //         labelText: "Nome",
-            //         border: OutlineInputBorder(),
-            //         focusedBorder: OutlineInputBorder(),
-            //       ),
-            //     ),
-            //   ),
-            // ),
-
-            // const SizedBox(height: 16),
-
-            // Align(
-            //   alignment: Alignment.center,
-            //   child: SizedBox(
-            //     width: 250,
-            //     child: DropdownButtonFormField<String>(
-            //       decoration: InputDecoration(
-            //         labelText: "Setor",
-            //         border: OutlineInputBorder(),
-            //         iconColor: Colors.blueAccent,
-            //       ),
-            //       items: ['Público', 'Privado']
-            //           .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-            //           .toList(),
-            //       onChanged: (val) => setState(() => selectedSector = val),
-
-            //       icon: const Icon(
-            //         Icons.arrow_drop_down,
-            //         color: Colors.blueAccent,
-            //       ),
-            //     ),
-            //   ),
-            // ),
-
-            // const SizedBox(height: 16),
-
-            // Align(
-            //   alignment: Alignment.center,
-            //   child: SizedBox(
-            //     width: 250,
-            //     child: Builder(
-            //       builder: (drawerContext) => ElevatedButton(
-            //         onPressed: () async {
-            //           try {
-            //             futureContratantes = filterContratantes(
-            //               nomeController.text,
-            //               selectedSector,
-            //             );
-
-            //             Navigator.of(drawerContext).pop();
-            //             setState(() {
-            //               selectedSector = null;
-            //               nomeController.clear();
-            //             });
-            //           } catch (e) {
-            //             ScaffoldMessenger.of(
-            //               drawerContext,
-            //             ).showSnackBar(SnackBar(content: Text("Erro: $e")));
-            //           }
-            //         },
-            //         style: ElevatedButton.styleFrom(
-            //           backgroundColor: Colors.blue,
-            //         ),
-            //         child: const Text(
-            //           "Pesquisar",
-            //           style: TextStyle(color: Colors.white),
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
@@ -163,31 +87,6 @@ class _CampanhasState extends State<Campanhas> {
         centerTitle: true,
         backgroundColor: Colors.blue[900],
         actions: [
-          IconButton(
-            onPressed: () {
-              // Navigator.pushNamed(context, "/new_contratante").then(
-              //   (_) => setState(() {
-              //     futureCampanhas = fetchCampanhas();
-              //   }),
-              // );
-            },
-            icon: SizedBox(
-              width: 32,
-              height: 32,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(Icons.campaign, size: 28),
-                  const Positioned(
-                    right: -3,
-                    bottom: 22,
-                    child: Icon(Icons.add, size: 12, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           Builder(
             builder: (context) => IconButton(
               icon: const Icon(Icons.filter_alt_outlined, size: 28),
@@ -224,9 +123,16 @@ class _CampanhasState extends State<Campanhas> {
                     motion: const DrawerMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) async {},
+                        onPressed: (context) async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CampanhaPontos(cmpgn: c),
+                            ),
+                          );
+                        },
                         backgroundColor: Colors.blue,
-                        icon: Icons.edit,
+                        icon: Icons.location_on_rounded,
                       ),
                       SlidableAction(
                         onPressed: (context) {

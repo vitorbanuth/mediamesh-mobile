@@ -286,18 +286,18 @@ class _ContratantesState extends State<Contratantes> {
                     motion: const DrawerMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) async {
-                          final result = await Navigator.push(
+                        onPressed: (slidableContext) async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
                                   EditContratantes(contratante: c),
                             ),
                           );
-                          if (result == true && mounted) {
-                            setState(() {
-                              futureContratantes = fetchContratantes();
-                            });
+                          if (mounted) {
+                          setState(() {
+                            futureContratantes = fetchContratantes();
+                          });
                           }
                         },
                         backgroundColor: Colors.blue,

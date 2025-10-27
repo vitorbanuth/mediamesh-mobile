@@ -98,7 +98,6 @@ class _EditContratantesState extends State<EditContratantes> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Contratante atualizado: ${result['name']}")),
       );
-      Navigator.pop(context, result);
     } else {
       print(response.statusCode);
       print(response.body);

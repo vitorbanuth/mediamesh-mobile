@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:http/http.dart' as http;
+import 'package:mediamesh/agencias/agencia_model.dart';
 import 'package:mediamesh/campanhas/list_campanha.dart';
+import 'package:mediamesh/contratantes/contratante_model.dart';
 import 'campanha.dart';
 import 'list_campanha_pontos.dart';
 
@@ -24,6 +26,8 @@ class _CampanhasState extends State<Campanhas> {
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
   String? selectedStatus;
+  List<String> advertiserNameArr = [];
+  List<String> agencyNameArr = [];
 
   String formatDate(String? rawDate) {
     if (rawDate == null || rawDate.isEmpty) return "";
@@ -59,6 +63,70 @@ class _CampanhasState extends State<Campanhas> {
 
       if (decoded is List) {
         return decoded.map((json) => Campanha.fromJson(json)).toList();
+      }
+
+      throw Exception("Formato inesperado do JSON: $decoded");
+    } else {
+      throw Exception(
+        'Erro ao carregar campanhas [${response.statusCode}]: ${response.body}',
+      );
+    }
+  }
+
+  late Future<List<Contratante>> futureContratantes;
+
+  Future<List<Contratante>> fetchContratantes() async {
+    final response = await http.get(
+      Uri.parse('https://sinestro.mediamesh.com.br/api/advertisers'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie':
+            'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is Map<String, dynamic> && decoded.containsKey("data")) {
+        final List<dynamic> jsonList = decoded["data"];
+        return jsonList.map((json) => Contratante.fromJson(json)).toList();
+      }
+
+      if (decoded is List) {
+        return decoded.map((json) => Contratante.fromJson(json)).toList();
+      }
+
+      throw Exception("Formato inesperado do JSON: $decoded");
+    } else {
+      throw Exception(
+        'Erro ao carregar contratantes [${response.statusCode}]: ${response.body}',
+      );
+    }
+  }
+
+  late Future<List<Agencia>> futureAgencias;
+
+  Future<List<Agencia>> fetchAgencias() async {
+    final response = await http.get(
+      Uri.parse('https://sinestro.mediamesh.com.br/api/agencies'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie':
+            'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is Map<String, dynamic> && decoded.containsKey("data")) {
+        final List<dynamic> jsonList = decoded["data"];
+        return jsonList.map((json) => Agencia.fromJson(json)).toList();
+      }
+
+      if (decoded is List) {
+        return decoded.map((json) => Agencia.fromJson(json)).toList();
       }
 
       throw Exception("Formato inesperado do JSON: $decoded");
@@ -157,6 +225,28 @@ class _CampanhasState extends State<Campanhas> {
   void initState() {
     super.initState();
     futureCampanhas = fetchCampanhas();
+    futureContratantes = fetchContratantes();
+    futureAgencias = fetchAgencias();
+
+    futureContratantes
+        .then((contratantes) {
+          setState(() {
+            advertiserNameArr = contratantes.map((c) => c.name).toList();
+          });
+        })
+        .catchError((error) {
+          print("Erro ao buscar contratantes: $error");
+        });
+
+    futureAgencias
+        .then((agencias) {
+          setState(() {
+            agencyNameArr = agencias.map((c) => c.name).toList();
+          });
+        })
+        .catchError((error) {
+          print("Erro ao buscar contratantes: $error");
+        });
   }
 
   @override
@@ -219,12 +309,13 @@ class _CampanhasState extends State<Campanhas> {
               child: SizedBox(
                 width: 250,
                 child: DropdownButtonFormField<String>(
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: "Anunciante",
                     border: OutlineInputBorder(),
                     iconColor: Colors.blueAccent,
                   ),
-                  items: ['TODO']
+                  items: advertiserNameArr
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
                   onChanged: (val) => setState(() => selectedAdvertiser = val),
@@ -243,16 +334,16 @@ class _CampanhasState extends State<Campanhas> {
               child: SizedBox(
                 width: 250,
                 child: DropdownButtonFormField<String>(
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: "Agência",
                     border: OutlineInputBorder(),
                     iconColor: Colors.blueAccent,
                   ),
-                  items: ['TODO']
+                  items: agencyNameArr
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
                   onChanged: (val) => setState(() => selectedAgency = val),
-
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.blueAccent,

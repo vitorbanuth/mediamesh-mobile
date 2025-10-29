@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'campanha.dart';
 
 class ListCampanha extends StatelessWidget {
@@ -7,8 +7,33 @@ class ListCampanha extends StatelessWidget {
 
   const ListCampanha({super.key, required this.campanha});
 
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return '-';
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  String getStatus(String? status) {
+    if (status == null) return "Inativo";
+    return status.toLowerCase() == "active" || status.toLowerCase() == "ativo"
+        ? "Ativo"
+        : "Inativo";
+  }
+
+  Color getStatusColor(String status) {
+    return status == "Ativo" ? Colors.green : Colors.red;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final inicio = formatDate(campanha.startDate);
+    final fim = formatDate(campanha.endDate);
+    final status = getStatus(campanha.status);
+
     return Scaffold(
       appBar: AppBar(title: Text(campanha.name)),
       body: Padding(
@@ -25,22 +50,30 @@ class ListCampanha extends StatelessWidget {
             ),
             ListTile(
               title: const Text("Status"),
-              subtitle: Text(campanha.status),
+              subtitle: Text(
+                status,
+                style: TextStyle(
+                  color: getStatusColor(status),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
 
-            ListTile(title: const Text("Nome Anunciante"), 
-            subtitle: Text(campanha.campanhaContratante.name)
+            ListTile(
+              title: const Text("Nome Anunciante"),
+              subtitle: Text(campanha.campanhaContratante.name),
             ),
-            ListTile(title: const Text("CNPJ Anunciante"), 
-            subtitle: Text(campanha.campanhaContratante.taxId)
+            ListTile(
+              title: const Text("CNPJ Anunciante"),
+              subtitle: Text(campanha.campanhaContratante.taxId),
             ),
             ListTile(
               title: const Text("Data de Início"),
-              subtitle: Text(campanha.startDate.toString()),
+              subtitle: Text(inicio),
             ),
             ListTile(
               title: const Text("Data de Fim"),
-              subtitle: Text(campanha.endDate.toString()),
+              subtitle: Text(fim),
             ),
             ListTile(
               title: const Text("Endereço"),

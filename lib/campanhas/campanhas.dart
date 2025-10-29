@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // 👈 Added for date formatting
 import 'package:mediamesh/campanhas/list_campanha.dart';
 import 'campanha.dart';
-import 'list_campanha_pontos.dart';
 
 class Campanhas extends StatefulWidget {
   const Campanhas({super.key});
@@ -47,6 +47,28 @@ class _CampanhasState extends State<Campanhas> {
     }
   }
 
+  // 👇 Helper functions to format date and handle status
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return '-';
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  String getStatus(String? status) {
+    if (status == null) return "Inativo";
+    return status.toLowerCase() == "active" || status.toLowerCase() == "ativo"
+        ? "Ativo"
+        : "Inativo";
+  }
+
+  Color getStatusColor(String status) {
+    return status == "Ativo" ? Colors.green : Colors.red;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -79,6 +101,83 @@ class _CampanhasState extends State<Campanhas> {
 
             const SizedBox(height: 16),
 
+            // Align(
+            //   alignment: Alignment.center,
+            //   child: SizedBox(
+            //     width: 250,
+            //     child: TextFormField(
+            //       controller: nomeController,
+            //       decoration: const InputDecoration(
+            //         labelText: "Nome",
+            //         border: OutlineInputBorder(),
+            //         focusedBorder: OutlineInputBorder(),
+            //       ),
+            //     ),
+            //   ),
+            // ),
+
+            // const SizedBox(height: 16),
+
+            // Align(
+            //   alignment: Alignment.center,
+            //   child: SizedBox(
+            //     width: 250,
+            //     child: DropdownButtonFormField<String>(
+            //       decoration: InputDecoration(
+            //         labelText: "Setor",
+            //         border: OutlineInputBorder(),
+            //         iconColor: Colors.blueAccent,
+            //       ),
+            //       items: ['Público', 'Privado']
+            //           .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            //           .toList(),
+            //       onChanged: (val) => setState(() => selectedSector = val),
+
+            //       icon: const Icon(
+            //         Icons.arrow_drop_down,
+            //         color: Colors.blueAccent,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+
+            // const SizedBox(height: 16),
+
+            // Align(
+            //   alignment: Alignment.center,
+            //   child: SizedBox(
+            //     width: 250,
+            //     child: Builder(
+            //       builder: (drawerContext) => ElevatedButton(
+            //         onPressed: () async {
+            //           try {
+            //             futureContratantes = filterContratantes(
+            //               nomeController.text,
+            //               selectedSector,
+            //             );
+
+            //             Navigator.of(drawerContext).pop();
+            //             setState(() {
+            //               selectedSector = null;
+            //               nomeController.clear();
+            //             });
+            //           } catch (e) {
+            //             ScaffoldMessenger.of(
+            //               drawerContext,
+            //             ).showSnackBar(SnackBar(content: Text("Erro: $e")));
+            //           }
+            //         },
+            //         style: ElevatedButton.styleFrom(
+            //           backgroundColor: Colors.blue,
+            //         ),
+            //         child: const Text(
+            //           "Pesquisar",
+            //           style: TextStyle(color: Colors.white),
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -87,6 +186,31 @@ class _CampanhasState extends State<Campanhas> {
         centerTitle: true,
         backgroundColor: Colors.blue[900],
         actions: [
+          IconButton(
+            onPressed: () {
+              // Navigator.pushNamed(context, "/new_contratante").then(
+              //   (_) => setState(() {
+              //     futureCampanhas = fetchCampanhas();
+              //   }),
+              // );
+            },
+            icon: SizedBox(
+              width: 32,
+              height: 32,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(Icons.campaign, size: 28),
+                  const Positioned(
+                    right: -3,
+                    bottom: 22,
+                    child: Icon(Icons.add, size: 12, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           Builder(
             builder: (context) => IconButton(
               icon: const Icon(Icons.filter_alt_outlined, size: 28),
@@ -113,6 +237,10 @@ class _CampanhasState extends State<Campanhas> {
             itemCount: campanhas.length,
             itemBuilder: (context, index) {
               final c = campanhas[index];
+              final inicio = formatDate(c.startDate);
+              final fim = formatDate(c.endDate);
+              final status = getStatus(c.status);
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Slidable(
@@ -123,16 +251,9 @@ class _CampanhasState extends State<Campanhas> {
                     motion: const DrawerMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CampanhaPontos(cmpgn: c),
-                            ),
-                          );
-                        },
+                        onPressed: (context) async {},
                         backgroundColor: Colors.blue,
-                        icon: Icons.location_on_rounded,
+                        icon: Icons.edit,
                       ),
                       SlidableAction(
                         onPressed: (context) {
@@ -154,8 +275,23 @@ class _CampanhasState extends State<Campanhas> {
                       vertical: 12,
                     ),
                     iconColor: Colors.green.shade700,
-                    leading: Icon(Icons.campaign),
+                    leading: const Icon(Icons.campaign),
                     title: Text(c.name),
+
+                    // 👇 Added fields: inicio, fim, and status
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Início: $inicio  •  Fim: $fim"),
+                        Text(
+                          "Status: $status",
+                          style: TextStyle(
+                            color: getStatusColor(status),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                     // subtitle: Text("${c.contact.name} • ${c.contact.email}"),
                   ),
                 ),

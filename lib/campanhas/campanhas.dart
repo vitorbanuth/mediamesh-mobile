@@ -15,6 +15,28 @@ class Campanhas extends StatefulWidget {
 }
 
 class _CampanhasState extends State<Campanhas> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController startDateController = TextEditingController();
+  final TextEditingController endDateController = TextEditingController();
+  String? selectedAdvertiser;
+  String? selectedAgency;
+  DateTime? selectedStartDate;
+  DateTime? selectedEndDate;
+  String? selectedStatus;
+
+  String formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty) return "";
+    try {
+      final parsedDate = DateTime.parse(rawDate);
+      return "${parsedDate.day.toString().padLeft(2, '0')}/"
+          "${parsedDate.month.toString().padLeft(2, '0')}/"
+          "${parsedDate.year}";
+    } catch (e) {
+      return rawDate;
+    }
+  }
+
   late Future<List<Campanha>> futureCampanhas;
 
   Future<List<Campanha>> fetchCampanhas() async {
@@ -47,6 +69,90 @@ class _CampanhasState extends State<Campanhas> {
     }
   }
 
+  final Map<String, String> kindMap = {
+    "Outdoor": "OUTDOOR",
+    "Indoor": "INDOOR",
+    "Elevador": "ELEVATOR",
+  };
+
+  Future<List<Campanha>> filterCampanhas(
+    String? nameText,
+    String? addressText,
+    String? advertiserTaxIdText,
+    String? agencyTaxIdText,
+    DateTime? startDateText,
+    DateTime? endDateText,
+    String? statusText,
+  ) async {
+    Map<String, String> queryParams = {};
+
+    if (nameText != null && nameText.trim().isNotEmpty) {
+      queryParams['filter[_name]'] = 'like';
+      queryParams['filter[name]'] = nameText.trim();
+    }
+
+    if (addressText != null && addressText.trim().isNotEmpty) {
+      queryParams['filter[_address]'] = 'like';
+      queryParams['filter[address]'] = addressText.trim();
+    }
+
+    if (advertiserTaxIdText != null && advertiserTaxIdText.trim().isNotEmpty) {
+      queryParams['filter[advertiser][taxId]'] = advertiserTaxIdText.trim();
+    }
+
+    if (agencyTaxIdText != null && agencyTaxIdText.trim().isNotEmpty) {
+      queryParams['filter[agency][taxId]'] = agencyTaxIdText.trim();
+    }
+
+    if (startDateText != null) {
+      queryParams['filter[_startDate]'] = 'gte';
+      queryParams['filter[startDate]'] = startDateText.toIso8601String();
+    }
+
+    if (endDateText != null) {
+      queryParams['filter[_endDate]'] = 'lte';
+      queryParams['filter[endDate]'] = endDateText.toIso8601String();
+    }
+
+    final statusValue = (statusText != null && statusText.isNotEmpty)
+        ? (kindMap[statusText] ?? statusText)
+        : null;
+    if (statusValue != null && statusValue.isNotEmpty) {
+      // queryParams['filter[_kind]'] = 'like';
+      queryParams['filter[status]'] = statusValue;
+    }
+
+    final uri = Uri.https(
+      'sinestro.mediamesh.com.br',
+      '/api/campaigns',
+      queryParams,
+    );
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie':
+            'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      final List<dynamic> data = jsonResponse["data"] ?? [];
+      return data.map((json) => Campanha.fromJson(json)).toList();
+    } else {
+      throw Exception("Falha ao carregar campanhas: ${response.statusCode}");
+    }
+  }
+
+  final colorMap = {
+    "Novo": Colors.blue.shade700,
+    "Publicada": Colors.green.shade400,
+    "Finalizada": Colors.grey.shade900,
+    "Faturada": Colors.amber.shade700,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -76,9 +182,215 @@ class _CampanhasState extends State<Campanhas> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: "Nome",
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: TextFormField(
+                  controller: addressController,
+                  decoration: const InputDecoration(
+                    labelText: "Endereço",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: "Anunciante",
+                    border: OutlineInputBorder(),
+                    iconColor: Colors.blueAccent,
+                  ),
+                  items: ['TODO']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedAdvertiser = val),
+
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: "Agência",
+                    border: OutlineInputBorder(),
+                    iconColor: Colors.blueAccent,
+                  ),
+                  items: ['TODO']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedAgency = val),
+
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: TextFormField(
+                  controller: startDateController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: "Data de início",
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+
+                    startDateController.text = formatDate(
+                      pickedDate.toString(),
+                    );
+
+                    selectedStartDate = pickedDate;
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: TextFormField(
+                  controller: endDateController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: "Data de Fim",
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+
+                    endDateController.text = formatDate(pickedDate.toString());
+
+                    selectedEndDate = pickedDate;
+                  },
+                ),
+              ),
+            ),
 
             const SizedBox(height: 16),
 
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: "Status",
+                    border: OutlineInputBorder(),
+                    iconColor: Colors.blueAccent,
+                  ),
+                  items: ['Nova', 'Publicada', 'Finalizada', 'Faturada']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedStatus = val),
+
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 250,
+                child: Builder(
+                  builder: (drawerContext) => ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        futureCampanhas = filterCampanhas(
+                          nameController.text,
+                          addressController.text,
+                          startDateController.text,
+                          endDateController.text,
+                          selectedStartDate,
+                          selectedEndDate,
+                          selectedStatus,
+                        );
+
+                        Navigator.of(drawerContext).pop();
+                        setState(() {
+                          selectedStatus = null;
+                          selectedStartDate = null;
+                          selectedEndDate = null;
+                          nameController.clear();
+                          addressController.clear();
+                          startDateController.clear();
+                          endDateController.clear();
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          drawerContext,
+                        ).showSnackBar(SnackBar(content: Text("Erro: $e")));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text(
+                      "Pesquisar",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -105,7 +417,7 @@ class _CampanhasState extends State<Campanhas> {
           } else if (snapshot.hasError) {
             return Center(child: Text("Erro: ${snapshot.error}"));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Nenhum contratante cadastrado."));
+            return const Center(child: Text("Nenhuma campanha cadastrada."));
           }
 
           final campanhas = snapshot.data!;
@@ -114,6 +426,7 @@ class _CampanhasState extends State<Campanhas> {
             itemBuilder: (context, index) {
               final c = campanhas[index];
               return Card(
+                color: colorMap[c.status],
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Slidable(
                   key: ValueKey(c.pi),
@@ -131,7 +444,7 @@ class _CampanhasState extends State<Campanhas> {
                             ),
                           );
                         },
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Colors.pink.shade600,
                         icon: Icons.location_on_rounded,
                       ),
                       SlidableAction(
@@ -153,10 +466,31 @@ class _CampanhasState extends State<Campanhas> {
                       horizontal: 12,
                       vertical: 12,
                     ),
-                    iconColor: Colors.green.shade700,
+                    iconColor: Colors.white,
                     leading: Icon(Icons.campaign),
-                    title: Text(c.name),
-                    // subtitle: Text("${c.contact.name} • ${c.contact.email}"),
+                    title: Text(
+                      c.name,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        Text(
+                          "Status: ${c.status} ",
+                          style: TextStyle(color: Colors.white), // cor do texto
+                        ),
+                        const SizedBox(height: 16),
+                        // espaçamento opcional
+                        Text(
+                          "${c.startDate} até ${c.endDate}",
+                          style: TextStyle(color: Colors.white), // cor do texto
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -167,3 +501,5 @@ class _CampanhasState extends State<Campanhas> {
     );
   }
 }
+
+// • ${c.startDate} • ${c.endDate}

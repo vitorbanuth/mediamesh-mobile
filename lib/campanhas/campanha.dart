@@ -40,9 +40,28 @@ class Campanha {
       }
     }
 
+    String formatStatus(String? rawStatus) {
+      if (rawStatus == null || rawStatus.isEmpty) return "";
+
+      if (rawStatus == "NEW") {
+        rawStatus = "Novo";
+      }
+      else if (rawStatus == "PUBLISHED") {
+        rawStatus = "Publicada";
+      }
+      else if (rawStatus == "DONE") {
+        rawStatus = "Finalizada";
+      }
+
+      else if (rawStatus == "INVOICED") {
+        rawStatus = "Faturada";
+      }
+      return rawStatus;
+    }
+
     return Campanha(
       pi: json["pi"] ?? "",
-      status: json["status"] ?? "",
+      status: formatStatus(json["status"] ?? ""),
       name: json["name"] ?? "",
       startDate: formatDate(json["startDate"] ?? ""),
       endDate: formatDate(json["endDate"] ?? ""),

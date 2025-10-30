@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:mediamesh/agencias/list_agencia.dart';
+
 import 'agencia_model.dart';
+import 'edit_agencia.dart';
 
 class Agencias extends StatefulWidget {
   const Agencias({super.key});
@@ -221,7 +223,20 @@ class _AgenciasState extends State<Agencias> {
                     motion: const DrawerMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) {},
+                        onPressed: (context) async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EditAgencia(agencia: a),
+                            ),
+                          );
+                          if (mounted) {
+                          setState(() {
+                            futureAgencias = fetchAgencias();
+                          });
+                          }
+                        },
                         backgroundColor: Colors.blue,
                         icon: Icons.edit,
                       ),

@@ -1,4 +1,5 @@
 class Campanha {
+  final String unique;
   final String pi;
   final String status;
   final String name;
@@ -13,6 +14,7 @@ class Campanha {
   final List<CampanhaPonto> campanhaPonto;
 
   Campanha({
+    required this.unique,
     required this.pi,
     required this.status,
     required this.name,
@@ -28,38 +30,23 @@ class Campanha {
   });
 
   factory Campanha.fromJson(Map<String, dynamic> json) {
-    String formatDate(String? rawDate) {
-      if (rawDate == null || rawDate.isEmpty) return "";
-      try {
-        final parsedDate = DateTime.parse(rawDate); // converte a string ISO
-        return "${parsedDate.day.toString().padLeft(2, '0')}/"
-            "${parsedDate.month.toString().padLeft(2, '0')}/"
-            "${parsedDate.year}";
-      } catch (e) {
-        return rawDate;
-      }
-    }
-
     String formatStatus(String? rawStatus) {
       if (rawStatus == null || rawStatus.isEmpty) return "";
 
       if (rawStatus == "NEW") {
         rawStatus = "Novo";
-      }
-      else if (rawStatus == "PUBLISHED") {
+      } else if (rawStatus == "PUBLISHED") {
         rawStatus = "Publicada";
-      }
-      else if (rawStatus == "DONE") {
+      } else if (rawStatus == "DONE") {
         rawStatus = "Finalizada";
-      }
-
-      else if (rawStatus == "INVOICED") {
+      } else if (rawStatus == "INVOICED") {
         rawStatus = "Faturada";
       }
       return rawStatus;
     }
 
     return Campanha(
+      unique: json["unique"] ?? "",
       pi: json["pi"] ?? "",
       status: formatStatus(json["status"] ?? ""),
       name: json["name"] ?? "",
@@ -121,6 +108,7 @@ class CampanhaPonto {
   final int slots;
   final String startTime;
   final int totalInsertsDay;
+  final List<Periods> periods;
 
   CampanhaPonto({
     required this.id,
@@ -147,6 +135,7 @@ class CampanhaPonto {
     required this.slots,
     required this.startTime,
     required this.totalInsertsDay,
+    required this.periods,
   });
 
   factory CampanhaPonto.fromJson(Map<String, dynamic> json) {
@@ -175,10 +164,51 @@ class CampanhaPonto {
       slots: json["slots"] ?? 0,
       startTime: json["startTime"] ?? "",
       totalInsertsDay: json["totalInsertsDay"] ?? 0,
+      periods:
+          (json["periods"] as List<dynamic>?)
+              ?.map((p) => Periods.fromJson(p))
+              .toList() ??
+          [],
     );
   }
+}
 
-  void addPonto() {}
+class Periods {
+  final String unique;
+  final String startDate;
+  final String endDate;
+  final bool isBonus;
+  final int insertsDay;
+  final int insertsPeriod;
+  final int totalDays;
+  final int occupationDay;
+  final String hash;
+
+  Periods({
+    required this.unique,
+    required this.startDate,
+    required this.endDate,
+    required this.isBonus,
+    required this.insertsDay,
+    required this.insertsPeriod,
+    required this.totalDays,
+    required this.occupationDay,
+    required this.hash,
+  });
+
+  factory Periods.fromJson(Map<String, dynamic> json) {
+    return Periods(
+      unique: json["unique"] ?? "",
+      startDate: formatDate(json["startDate"] ?? ""),
+      endDate: formatDate(json["endDate"] ?? ""),
+      isBonus: json["isBonus"] ?? false,
+      insertsDay: json["insertsDay"] ?? 0,
+      insertsPeriod: json["insertsPeriod"] ?? 0,
+      totalDays: json["totalDays"] ?? 0,
+      occupationDay: json["occupationDay"] ?? 0,
+      hash: json["hash"] ?? "",
+    );
+  }
 }
 
 class Dimensions {
@@ -252,5 +282,17 @@ class Presentation {
       description: json["description"] ?? "",
       image: ImageData.fromJson(json["image"] ?? {}),
     );
+  }
+}
+
+String formatDate(String? rawDate) {
+  if (rawDate == null || rawDate.isEmpty) return "";
+  try {
+    final parsedDate = DateTime.parse(rawDate); // converte a string ISO
+    return "${parsedDate.day.toString().padLeft(2, '0')}/"
+        "${parsedDate.month.toString().padLeft(2, '0')}/"
+        "${parsedDate.year}";
+  } catch (e) {
+    return rawDate;
   }
 }

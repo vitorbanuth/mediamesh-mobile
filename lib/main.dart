@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mediamesh/campanhas/campanha.dart';
+import 'package:mediamesh/campanhas/list_campanha.dart';
+// import 'package:mediamesh/home.dart';
 import 'package:mediamesh/tasks/new_task.dart';
 import 'pontos/pops.dart';
 import 'contratantes/contratantes.dart';
@@ -12,7 +15,7 @@ import 'configuracoes/configuracoes.dart';
 import 'tasks/tasks.dart';
 import 'contratantes/new_contratante.dart';
 import 'agencias/new_agencia.dart';
-import 'home.dart';
+// import 'home.dart';
 // import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'pontos/list_pop.dart';
 
@@ -90,9 +93,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<Home> fetchHome() async {
+  List<Campanha> campanhasNovas = [];
+  List<Campanha> campanhasPublicadas = [];
+  List<Campanha> campanhasFinalizadas = [];
+  List<Campanha> campanhasFaturadas = [];
+  int campanhasNovasLen = 0;
+  int campanhasPublicadasLen = 0;
+  int campanhasFinalizadasLen = 0;
+  int campanhasFaturadasLen = 0;
+
+  Future<List<Campanha>> fetchHome() async {
     final response = await http.get(
-      Uri.parse('https://sinestro.mediamesh.com.br/api/home'),
+      Uri.parse('https://sinestro.mediamesh.com.br/api/campaigns'),
       headers: {
         'Content-Type': 'application/json',
         'Cookie':
@@ -101,25 +113,63 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      return Home.fromJson(jsonResponse);
+      final decoded = jsonDecode(response.body);
+
+      // 🔍 Detecta se é uma lista ou um objeto com campo 'data'
+      List<dynamic> lista;
+
+      if (decoded is List) {
+        lista = decoded;
+      } else if (decoded is Map && decoded.containsKey('data')) {
+        lista = decoded['data'];
+      } else {
+        throw Exception(
+          "Formato inesperado de resposta: ${decoded.runtimeType}",
+        );
+      }
+
+      final campanhas = lista.map((e) => Campanha.fromJson(e)).toList();
+
+      return campanhas;
     } else {
-      throw Exception('Erro ao carregar dados');
+      throw Exception('Erro ao carregar dados (${response.statusCode})');
     }
   }
 
-  late Future<Home> homeInfos;
+  late Future<List<Campanha>> homeInfos;
 
   @override
   void initState() {
     super.initState();
     homeInfos = fetchHome();
+    fetchHome().then((listaCampanhas) {
+      setState(() {
+        campanhasNovas = listaCampanhas
+            .where((c) => c.status == 'Nova')
+            .toList();
+        campanhasPublicadas = listaCampanhas
+            .where((c) => c.status == 'Publicada')
+            .toList();
+        campanhasFinalizadas = listaCampanhas
+            .where((c) => c.status == 'Finalizada')
+            .toList();
+        campanhasFaturadas = listaCampanhas
+            .where((c) => c.status == 'Faturada')
+            .toList();
+      });
+
+      campanhasNovasLen = campanhasNovas.length;
+      campanhasPublicadasLen = campanhasPublicadas.length;
+      campanhasFinalizadasLen = campanhasFinalizadas.length;
+      campanhasFaturadasLen = campanhasFaturadas.length;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
         iconTheme: IconThemeData(color: Colors.black),
         title: Image.asset('assets/image.png', height: 40),
@@ -195,221 +245,327 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
 
-      body: FutureBuilder<Home>(
-        future: homeInfos,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Erro: ${snapshot.error}"));
-          } else if (snapshot.hasData) {
-            print(snapshot.data);
-            final home = snapshot.data!;
-            return Column(
-              children: [
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 15),
 
-                SizedBox(height: 15),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Text(
+                "Visão Geral",
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(height: 15),
 
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Text(
-                    "Visão Geral",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                width: double.infinity,
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade700,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 15),
 
-                
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      constraints: const BoxConstraints(maxHeight: 100),
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade700,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.grey,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Icon(Icons.add_circle, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          "Novas Campanhas: ${campanhasNovasLen.toString()}" ,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
 
-                      // O conteúdo
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 15),
-
-                          Row(
-                            children: [
-                              Icon(Icons.add_circle, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                "Novas Campanhas: ${home.campaignStatus.newStatus.toString()}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white
+                    // 🔽 Lista dinâmica de campanhas novas
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: campanhasNovas.length,
+                        itemBuilder: (context, index) {
+                          final campanha = campanhasNovas[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ListCampanha(campanha: campanha),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                "- ${campanha.name}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.white,
                                 ),
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 15),
-                        ],
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
-                
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      constraints: const BoxConstraints(maxHeight: 100),
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade400,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.grey,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
+                  ],
+                ),
+              ),
+            ),
+
+            Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                width: double.infinity,
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade400,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+
+                // 🔽 Conteúdo
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Icon(Icons.upload, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          "Campanhas Publicadas: ${campanhasPublicadasLen.toString()}",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
 
-                      // O conteúdo
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 15),
-
-                          Row(
-                            children: [
-                              Icon(Icons.upload, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                "Campanhas Publicadas: ${home.campaignStatus.published.toString()}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white
+                    // 🔽 Lista dinâmica de campanhas novas
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: campanhasPublicadas.length,
+                        itemBuilder: (context, index) {
+                          final campanha = campanhasPublicadas[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ListCampanha(campanha: campanha),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                "- ${campanha.name}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.white,
                                 ),
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 15),
-                        ],
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
+                  ],
+                ),
+              ),
+            ),
 
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      constraints: const BoxConstraints(maxHeight: 100),
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade900,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.grey,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                width: double.infinity,
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade900,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+
+                // 🔽 Conteúdo
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Icon(Icons.check_box_outlined, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          "Campanhas Finalizadas: ${campanhasFinalizadasLen.toString()}",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
 
-                      // O conteúdo
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 15),
-
-                          Row(
-                            children: [
-                              Icon(Icons.check_box_outlined, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                "Campanhas Finalizadas: ${home.campaignStatus.done.toString()}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white
+                    // 🔽 Lista dinâmica de campanhas novas
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: campanhasFinalizadas.length,
+                        itemBuilder: (context, index) {
+                          final campanha = campanhasFinalizadas[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ListCampanha(campanha: campanha),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                "- ${campanha.name}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.white,
                                 ),
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 15),
-                        ],
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
+                  ],
+                ),
+              ),
+            ),
 
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      constraints: const BoxConstraints(maxHeight: 100),
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade700,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.grey,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                width: double.infinity,
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade700,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+
+                // 🔽 Conteúdo
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children:  [
+                        Icon(
+                          Icons.monetization_on_outlined,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          "Campanhas Faturadas: ${campanhasFaturadasLen.toString()}",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
 
-                      // O conteúdo
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 15),
-
-                          Row(
-                            children: [
-                              Icon(Icons.attach_money, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                "Campanhas Faturadas: ${home.campaignStatus.invoiced.toString()}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white
+                    // 🔽 Lista dinâmica de campanhas novas
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: campanhasFaturadas.length,
+                        itemBuilder: (context, index) {
+                          final campanha = campanhasFaturadas[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ListCampanha(campanha: campanha),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                "- ${campanha.name}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.white,
                                 ),
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 15),
-                        ],
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
-                
-              ],
-            );
-          } else {
-            return const Center(child: Text("Nenhum dado encontrado"));
-          }
-        }, // This trailing comma makes auto-formatting nicer for build methods.
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

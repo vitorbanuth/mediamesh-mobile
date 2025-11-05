@@ -23,11 +23,15 @@ class _CampanhasState extends State<Campanhas> {
   final TextEditingController endDateController = TextEditingController();
   String? selectedAdvertiser;
   String? selectedAgency;
+  String? selectedAdvertiserTaxId;
+  String? selectedAgencyTaxId;
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
   String? selectedStatus;
   List<String> advertiserNameArr = [];
+  List<String> advertiserTaxIdArr = [];
   List<String> agencyNameArr = [];
+  List<String> agencyTaxIdArr = [];
 
   String formatDate(String? rawDate) {
     if (rawDate == null || rawDate.isEmpty) return "";
@@ -154,6 +158,13 @@ class _CampanhasState extends State<Campanhas> {
   ) async {
     Map<String, String> queryParams = {};
 
+    Map<String, String> statusMap = {
+      "Nova": "NEW",
+      "Publicada": "PUBLISHED",
+      "Finalizada": "DONE",
+      "Faturada": "INVOICED",
+    };
+
     if (nameText != null && nameText.trim().isNotEmpty) {
       queryParams['filter[_name]'] = 'like';
       queryParams['filter[name]'] = nameText.trim();
@@ -186,8 +197,7 @@ class _CampanhasState extends State<Campanhas> {
         ? (kindMap[statusText] ?? statusText)
         : null;
     if (statusValue != null && statusValue.isNotEmpty) {
-      // queryParams['filter[_kind]'] = 'like';
-      queryParams['filter[status]'] = statusValue;
+      queryParams['filter[status]'] = statusMap[statusValue]!;
     }
 
     final uri = Uri.https(
@@ -232,6 +242,7 @@ class _CampanhasState extends State<Campanhas> {
         .then((contratantes) {
           setState(() {
             advertiserNameArr = contratantes.map((c) => c.name).toList();
+            advertiserTaxIdArr = contratantes.map((c) => c.taxId).toList();
           });
         })
         .catchError((error) {
@@ -242,6 +253,7 @@ class _CampanhasState extends State<Campanhas> {
         .then((agencias) {
           setState(() {
             agencyNameArr = agencias.map((c) => c.name).toList();
+            agencyTaxIdArr = agencias.map((c) => c.taxId).toList();
           });
         })
         .catchError((error) {
@@ -318,7 +330,17 @@ class _CampanhasState extends State<Campanhas> {
                   items: advertiserNameArr
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
-                  onChanged: (val) => setState(() => selectedAdvertiser = val),
+                  onChanged: (val) {
+                    setState(() {
+                      selectedAdvertiser = val; // salva o nome selecionado
+
+                      // pega o índice do nome selecionado
+                      final index = advertiserNameArr.indexOf(val!);
+
+                      // pega o taxId correspondente
+                      selectedAdvertiserTaxId = advertiserTaxIdArr[index];
+                    });
+                  },
 
                   icon: const Icon(
                     Icons.arrow_drop_down,
@@ -343,7 +365,17 @@ class _CampanhasState extends State<Campanhas> {
                   items: agencyNameArr
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
-                  onChanged: (val) => setState(() => selectedAgency = val),
+                  onChanged: (val) {
+                    setState(() {
+                      selectedAgency = val; // salva o nome selecionado
+
+                      // pega o índice do nome selecionado
+                      final index = agencyNameArr.indexOf(val!);
+
+                      // pega o taxId correspondente
+                      selectedAgencyTaxId = agencyTaxIdArr[index];
+                    });
+                  },
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.blueAccent,
@@ -447,8 +479,8 @@ class _CampanhasState extends State<Campanhas> {
                         futureCampanhas = filterCampanhas(
                           nameController.text,
                           addressController.text,
-                          startDateController.text,
-                          endDateController.text,
+                          selectedAdvertiserTaxId,
+                          selectedAgencyTaxId,
                           selectedStartDate,
                           selectedEndDate,
                           selectedStatus,

@@ -1,16 +1,15 @@
+
 class Home {
   final Status campaignStatus;
-  final StorageUsage homeUsage;
 
   Home({
     required this.campaignStatus,
-    required this.homeUsage,
   });
 
   factory Home.fromJson(Map<String, dynamic> json) {
     return Home(
-      campaignStatus: Status.fromJson(json["totalByStatus"] ?? {}),
-      homeUsage: StorageUsage.fromJson(json["storageUsageTotal"] ?? {})
+      campaignStatus: Status.fromJson(json["status"] ?? {}),
+      // homeUsage: StorageUsage.fromJson(json["storageUsageTotal"] ?? {})
     );
   }
 }

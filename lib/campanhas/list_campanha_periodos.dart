@@ -135,7 +135,155 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                   ),
                   CustomSlidableAction(
                     onPressed: (context) async {
-                      // TODO LOAD CHECKING
+                      final periodUrl =
+                          'https://sinestro.mediamesh.com.br/storage/campaigns/${widget.cmpgnUnique}/arts/${periodo.hash}-th';
+
+                      final headers = {
+                        'Cookie':
+                            'sid=s%3Aj%3A%7B%22id%22%3A%22PAQQE22U%22%2C%22apiVersion%22%3A%22939fb3ae%22%2C%22tenant%22%3A%7B%22alias%22%3A%22devs%22%2C%22taxId%22%3A%2293564144000151%22%2C%22slug%22%3A%22devs%22%7D%2C%22user%22%3A%7B%22unique%22%3A%224M7KC7FC%22%2C%22name%22%3A%22Devs%22%2C%22email%22%3A%22devs%40mediamesh.com.br%22%2C%22hasSetup%22%3Atrue%7D%7D.lAiHBJzBPbp4cKvKqPBx3%2FX72AQ615XeRIFxKO2bHoE',
+                      };
+
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => Scaffold(
+                            appBar: AppBar(title: const Text('Checkings')),
+                            body: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // --- ARTE PRINCIPAL ---
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            "Arte do Período",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 16),
+
+                                          FutureBuilder<Uint8List>(
+                                            future: fetchImageBytes(
+                                              periodUrl,
+                                              headers,
+                                            ),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const CircularProgressIndicator();
+                                              } else if (snapshot.hasError) {
+                                                return const Text(
+                                                  'Erro ao carregar arte',
+                                                );
+                                              } else {
+                                                return ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: Image.memory(
+                                                    snapshot.data!,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    Center(
+                                      child: Text(
+                                        "Checkings",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 16),
+
+                                    ListView.builder(
+                                      itemCount: periodo.checkings.length,
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemBuilder: (context, index) {
+                                        final checking =
+                                            periodo.checkings[index];
+                                        final checkingUrl =
+                                            'https://sinestro.mediamesh.com.br/storage/campaigns/${widget.cmpgnUnique}/snaps/${checking.hash}-th';
+
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            // const SizedBox(height: 8),
+                                            FutureBuilder<Uint8List>(
+                                              future: fetchImageBytes(
+                                                checkingUrl,
+                                                headers,
+                                              ),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  );
+                                                } else if (snapshot.hasError) {
+                                                  return const Text(
+                                                    'Erro ao carregar imagem',
+                                                  );
+                                                } else {
+                                                  return ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    child: Image.memory(
+                                                      snapshot.data!,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                            ),
+
+                                            const SizedBox(height: 16),
+                                            Center(
+                                              child: ListTile(
+                                                leading: Icon(
+                                                  Icons.calendar_month,
+                                                ),
+                                                title: Text(
+                                                  "Data da foto: ${checking.date}",
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
                     },
                     backgroundColor: Colors.lightGreen.shade400,
                     child: const Icon(
@@ -217,23 +365,7 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                     ),
                   ],
                 ),
-
-                // subtitle: Column(
-                //   crossAxisAlignment: CrossAxisAlignment.start,
-                //   children: [
-                //     Text("${periodo.startDate} até ${periodo.endDate}"),
-                //     const SizedBox(height: 16),
-                //     Text("Inserções / dia: ${periodo.insertsDay}"),
-                //     const SizedBox(height: 16),
-                //     Text("Bonificado: ${periodo.isBonus}"),
-                //     const SizedBox(height: 16),
-                //     Text("Inserções no período: ${periodo.insertsPeriod}"),
-                //     const SizedBox(height: 16),
-                //     Text("Total de dias: ${periodo.totalDays}"),
-                //     const SizedBox(height: 16),
-                //     Text("Ocupação slot/dia: ${periodo.occupationDay}"),
-                //   ],
-                // ),
+                
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 12,

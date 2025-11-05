@@ -183,6 +183,7 @@ class Periods {
   final int totalDays;
   final int occupationDay;
   final String hash;
+  final List<Checkings> checkings;
 
   Periods({
     required this.unique,
@@ -194,6 +195,7 @@ class Periods {
     required this.totalDays,
     required this.occupationDay,
     required this.hash,
+    required this.checkings
   });
 
   factory Periods.fromJson(Map<String, dynamic> json) {
@@ -207,9 +209,36 @@ class Periods {
       totalDays: json["totalDays"] ?? 0,
       occupationDay: json["occupationDay"] ?? 0,
       hash: json["hash"] ?? "",
+      checkings:
+          (json["checkings"] as List<dynamic>?)
+              ?.map((p) => Checkings.fromJson(p))
+              .toList() ??
+          [],
     );
   }
 }
+
+class Checkings {
+  final String unique;
+  final String date;
+  final String hash;
+
+  Checkings({
+    required this.unique,
+    required this.date,
+    required this.hash,
+  });
+
+  factory Checkings.fromJson(Map<String, dynamic> json) {
+    return Checkings(
+      unique: json["unique"] ?? "",
+      date: formatDate(json["date"] ?? ""),
+      hash: json["hash"] ?? "",
+    );
+  }
+}
+
+
 
 class Dimensions {
   final int artWidth;

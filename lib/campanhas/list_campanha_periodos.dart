@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:http/http.dart' as http;
+import 'package:mediamesh/campanhas/list_campanha_checking.dart';
 import 'campanha.dart';
 
 class CampanhaPeriodos extends StatefulWidget {
@@ -24,10 +25,17 @@ class CampanhaPeriodos extends StatefulWidget {
 class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
   late List<Periods> periods;
 
+  dynamic parentContext;
+
   @override
   void initState() {
     super.initState();
     periods = widget.pop.periods;
+  }
+
+  String formatSizeToMB(int bytes) {
+    double mb = bytes / (1024 * 1024);
+    return "${mb.toStringAsFixed(2)} MB";
   }
 
   Future<Uint8List> fetchImageBytes(
@@ -46,10 +54,11 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
 
   @override
   Widget build(BuildContext context) {
+    parentContext = context;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.pop.name,
+          "Períodos",
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
@@ -91,6 +100,7 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                 motion: const DrawerMotion(),
                 children: [
                   CustomSlidableAction(
+                    
                     onPressed: (context) async {
                       final url =
                           'https://sinestro.mediamesh.com.br/storage/campaigns/${widget.cmpgnUnique}/arts/${periodo.hash}-th';
@@ -103,23 +113,199 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                         MaterialPageRoute(
                           builder: (_) => Scaffold(
                             appBar: AppBar(title: const Text('Prévia da arte')),
-                            body: Center(
-                              child: FutureBuilder<Uint8List>(
-                                future: fetchImageBytes(url, headers),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else if (snapshot.hasError) {
-                                    return const Text(
-                                      'Erro ao carregar imagem',
-                                    );
-                                  } else {
-                                    return InteractiveViewer(
-                                      child: Image.memory(snapshot.data!),
-                                    );
-                                  }
-                                },
+                            body: Align(
+                              alignment: AlignmentGeometry.topCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      FutureBuilder<Uint8List>(
+                                        future: fetchImageBytes(url, headers),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const CircularProgressIndicator();
+                                          } else if (snapshot.hasError) {
+                                            return const Text(
+                                              'Erro ao carregar imagem',
+                                            );
+                                          } else {
+                                            return ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Image.memory(
+                                                snapshot.data!,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            );
+                                            // );
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(height: 32),
+                                      RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                          children: [
+                                            const TextSpan(
+                                              text: 'Nome: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(text: periodo.blob.name),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+                                      RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                          children: [
+                                            const TextSpan(
+                                              text: 'ID: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(text: periodo.hash),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+
+                                      RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                          children: [
+                                            const TextSpan(
+                                              text: 'Tamanho: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: formatSizeToMB(
+                                                periodo.blob.size,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+
+                                      RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                          children: [
+                                            const TextSpan(
+                                              text: 'Data do upload: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: periodo.blob.createdAt
+                                                  .toString(),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+
+                                      RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                          children: [
+                                            const TextSpan(
+                                              text: 'Dimensão original: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text:
+                                                  '${periodo.blob.meta.width}x${periodo.blob.meta.height}',
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+
+                                      RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                          children: [
+                                            const TextSpan(
+                                              text: 'Formato: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: periodo.blob.meta.codec,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+
+                                      RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                          children: [
+                                            const TextSpan(
+                                              text: 'Duração: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: periodo.blob.meta.duration
+                                                  .toString(),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -146,7 +332,9 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => Scaffold(
-                            appBar: AppBar(title: const Text('Checkings')),
+                            appBar: AppBar(
+                              title: const Text('Book Fotográfico'),
+                            ),
                             body: SingleChildScrollView(
                               physics: const BouncingScrollPhysics(),
                               child: Padding(
@@ -154,7 +342,6 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // --- ARTE PRINCIPAL ---
                                     Center(
                                       child: Column(
                                         children: [
@@ -243,14 +430,283 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                                                     'Erro ao carregar imagem',
                                                   );
                                                 } else {
-                                                  return ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
+                                                  return Slidable(
+                                                    endActionPane: ActionPane(
+                                                      extentRatio: 0.70,
+                                                      motion:
+                                                          const DrawerMotion(),
+                                                      children: [
+                                                        SlidableAction(
+                                                          onPressed: (context) async {
+                                                            Navigator.of(
+                                                              context,
+                                                            ).push(
+                                                              MaterialPageRoute(
+                                                                builder: (_) => Scaffold(
+                                                                  appBar: AppBar(
+                                                                    title: const Text(
+                                                                      'Informações',
+                                                                    ),
+                                                                  ),
+                                                                  body: Align(
+                                                                    alignment:
+                                                                        AlignmentGeometry
+                                                                            .topCenter,
+                                                                    child: Padding(
+                                                                      padding:
+                                                                          const EdgeInsets.all(
+                                                                            16,
+                                                                          ),
+                                                                      child: SingleChildScrollView(
+                                                                        child: Column(
+                                                                          crossAxisAlignment:
+                                                                              CrossAxisAlignment.start,
+                                                                          children: [
+                                                                            FutureBuilder<
+                                                                              Uint8List
+                                                                            >(
+                                                                              future: fetchImageBytes(
+                                                                                checkingUrl,
+                                                                                headers,
+                                                                              ),
+                                                                              builder:
+                                                                                  (
+                                                                                    context,
+                                                                                    snapshot,
+                                                                                  ) {
+                                                                                    if (snapshot.connectionState ==
+                                                                                        ConnectionState.waiting) {
+                                                                                      return const CircularProgressIndicator();
+                                                                                    } else if (snapshot.hasError) {
+                                                                                      return const Text(
+                                                                                        'Erro ao carregar imagem',
+                                                                                      );
+                                                                                    } else {
+                                                                                      return ClipRRect(
+                                                                                        borderRadius: BorderRadius.circular(
+                                                                                          12,
+                                                                                        ),
+                                                                                        child: Image.memory(
+                                                                                          snapshot.data!,
+                                                                                          fit: BoxFit.cover,
+                                                                                        ),
+                                                                                      );
+                                                                                      // );
+                                                                                    }
+                                                                                  },
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              height: 32,
+                                                                            ),
+                                                                            RichText(
+                                                                              text: TextSpan(
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontSize: 16,
+                                                                                ),
+                                                                                children: [
+                                                                                  const TextSpan(
+                                                                                    text: 'Nome: ',
+                                                                                    style: TextStyle(
+                                                                                      fontWeight: FontWeight.bold,
+                                                                                    ),
+                                                                                  ),
+                                                                                  TextSpan(
+                                                                                    text: checking.blob.name,
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+                                                                            const Divider(),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+                                                                            RichText(
+                                                                              text: TextSpan(
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontSize: 16,
+                                                                                ),
+                                                                                children: [
+                                                                                  const TextSpan(
+                                                                                    text: 'ID: ',
+                                                                                    style: TextStyle(
+                                                                                      fontWeight: FontWeight.bold,
+                                                                                    ),
+                                                                                  ),
+                                                                                  TextSpan(
+                                                                                    text: checking.hash,
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+                                                                            const Divider(),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+
+                                                                            RichText(
+                                                                              text: TextSpan(
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontSize: 16,
+                                                                                ),
+                                                                                children: [
+                                                                                  const TextSpan(
+                                                                                    text: 'Tamanho: ',
+                                                                                    style: TextStyle(
+                                                                                      fontWeight: FontWeight.bold,
+                                                                                    ),
+                                                                                  ),
+                                                                                  TextSpan(
+                                                                                    text: formatSizeToMB(
+                                                                                      checking.blob.size,
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+                                                                            const Divider(),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+
+                                                                            RichText(
+                                                                              text: TextSpan(
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontSize: 16,
+                                                                                ),
+                                                                                children: [
+                                                                                  const TextSpan(
+                                                                                    text: 'Data do upload: ',
+                                                                                    style: TextStyle(
+                                                                                      fontWeight: FontWeight.bold,
+                                                                                    ),
+                                                                                  ),
+                                                                                  TextSpan(
+                                                                                    text: checking.blob.createdAt.toString(),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+                                                                            const Divider(),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+
+                                                                            RichText(
+                                                                              text: TextSpan(
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontSize: 16,
+                                                                                ),
+                                                                                children: [
+                                                                                  const TextSpan(
+                                                                                    text: 'Dimensão original: ',
+                                                                                    style: TextStyle(
+                                                                                      fontWeight: FontWeight.bold,
+                                                                                    ),
+                                                                                  ),
+                                                                                  TextSpan(
+                                                                                    text: '${checking.blob.meta.width}x${checking.blob.meta.height}',
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+                                                                            const Divider(),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+
+                                                                            RichText(
+                                                                              text: TextSpan(
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontSize: 16,
+                                                                                ),
+                                                                                children: [
+                                                                                  const TextSpan(
+                                                                                    text: 'Formato: ',
+                                                                                    style: TextStyle(
+                                                                                      fontWeight: FontWeight.bold,
+                                                                                    ),
+                                                                                  ),
+                                                                                  TextSpan(
+                                                                                    text: checking.blob.meta.codec,
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+                                                                            const Divider(),
+                                                                            const SizedBox(
+                                                                              height: 8,
+                                                                            ),
+
+                                                                            RichText(
+                                                                              text: TextSpan(
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontSize: 16,
+                                                                                ),
+                                                                                children: [
+                                                                                  const TextSpan(
+                                                                                    text: 'Duração: ',
+                                                                                    style: TextStyle(
+                                                                                      fontWeight: FontWeight.bold,
+                                                                                    ),
+                                                                                  ),
+                                                                                  TextSpan(
+                                                                                    text: checking.blob.meta.duration.toString(),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                          backgroundColor:
+                                                              Colors
+                                                                  .purple
+                                                                  .shade700,
+                                                          icon: Icons
+                                                              .remove_red_eye_sharp,
                                                         ),
-                                                    child: Image.memory(
-                                                      snapshot.data!,
-                                                      fit: BoxFit.cover,
+                                                      ],
+                                                    ),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                      child: Image.memory(
+                                                        snapshot.data!,
+                                                        fit: BoxFit.cover,
+                                                      ),
                                                     ),
                                                   );
                                                 }
@@ -272,10 +728,27 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                                               ),
                                             ),
                                             const SizedBox(height: 16),
-
                                           ],
                                         );
                                       },
+                                    ),
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: ()  {
+                                          Navigator.push(
+                                            parentContext,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  CampanhaChecking(
+                                                    cmpgnUnq:
+                                                        widget.cmpgnUnique,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+
+                                        child: Text("--> Checking"),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -365,7 +838,7 @@ class _CampanhaPeriodosState extends State<CampanhaPeriodos> {
                     ),
                   ],
                 ),
-                
+
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 12,

@@ -19,7 +19,9 @@ import 'agencias/new_agencia.dart';
 // import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'pontos/list_pop.dart';
 
-// import 'assets/';
+import 'atividades/modelAtividade.dart';
+import 'atividades/serviceAtividade.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -137,11 +139,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   late Future<List<Campanha>> homeInfos;
+  late Future<List<Activity>> activitiesFuture; // novo
 
   @override
   void initState() {
     super.initState();
     homeInfos = fetchHome();
+    activitiesFuture = fetchActivities(); // inicializa o future
     fetchHome().then((listaCampanhas) {
       setState(() {
         campanhasNovas = listaCampanhas
@@ -564,6 +568,87 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
+
+            const SizedBox(height: 16),
+
+            // seção Atividades
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Atividades", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  FutureBuilder<List<Activity>>(
+                    future: activitiesFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Text('Erro ao carregar atividades: ${snapshot.error}'),
+                        );
+                      }
+
+                      final list = snapshot.data ?? [];
+                      if (list.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Text('Nenhuma atividade encontrada.'),
+                        );
+                      }
+
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: list.length,
+                        separatorBuilder: (_, __) => Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final a = list[index];
+                          return ListTile(
+                            contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade700,
+                              child: Icon(Icons.description, color: Colors.white),
+                            ),
+                            title: Text(
+                              a.text.toUpperCase(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(a.sub),
+                            trailing: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(a.timeAgo(), style: TextStyle(fontSize: 12)),
+                                SizedBox(height: 4),
+                                Flexible(
+                                  child: Text(
+                                    'por ${a.actor}',
+                                    style: TextStyle(fontSize: 12),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              // opcional: abrir detalhes da activity
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
           ],
         ),
       ),

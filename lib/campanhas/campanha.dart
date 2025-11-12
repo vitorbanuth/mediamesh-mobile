@@ -184,6 +184,7 @@ class Periods {
   final int occupationDay;
   final String hash;
   final List<Checkings> checkings;
+  final Blob blob;
 
   Periods({
     required this.unique,
@@ -195,7 +196,8 @@ class Periods {
     required this.totalDays,
     required this.occupationDay,
     required this.hash,
-    required this.checkings
+    required this.checkings,
+    required this.blob,
   });
 
   factory Periods.fromJson(Map<String, dynamic> json) {
@@ -214,6 +216,7 @@ class Periods {
               ?.map((p) => Checkings.fromJson(p))
               .toList() ??
           [],
+      blob: Blob.fromJson(json["blob"] ?? {}),
     );
   }
 }
@@ -222,11 +225,13 @@ class Checkings {
   final String unique;
   final String date;
   final String hash;
+  final Blob blob;
 
   Checkings({
     required this.unique,
     required this.date,
     required this.hash,
+    required this.blob,
   });
 
   factory Checkings.fromJson(Map<String, dynamic> json) {
@@ -234,11 +239,80 @@ class Checkings {
       unique: json["unique"] ?? "",
       date: formatDate(json["date"] ?? ""),
       hash: json["hash"] ?? "",
+      blob: Blob.fromJson(json["blob"] ?? {}),
     );
   }
 }
 
+class Blob {
+  final Meta meta;
+  final int size;
+  final String name;
+  final String ownerKind;
+  final String ownerUnique;
+  final String arts;
+  final String createdAt;
+  final String updatedAt;
+  final String deletedAt;
 
+  Blob({
+    required this.meta,
+    required this.size,
+    required this.name,
+    required this.ownerKind,
+    required this.ownerUnique,
+    required this.arts,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.deletedAt,
+  });
+
+  factory Blob.fromJson(Map<String, dynamic> json) {
+    return Blob(
+      meta: Meta.fromJson(json["meta"] ?? {}),
+      size: json["size"] ?? 0,
+      name: json["name"] ?? "",
+      ownerKind: json["ownerKind"] ?? "",
+      ownerUnique: json["ownerUnique"] ?? "",
+      arts: json["arts"] ?? "",
+      createdAt: formatDate(json["createdAt"] ?? ""),
+      updatedAt: formatDate(json["updatedAt"] ?? ""),
+      deletedAt: formatDate(json["deletedAt"] ?? ""),
+    );
+  }
+}
+
+class Meta {
+  final String tag;
+  final String type;
+  final dynamic duration;
+  final int width;
+  final int height;
+  final int fps;
+  final String codec;
+
+  Meta({
+    required this.tag,
+    required this.type,
+    required this.duration,
+    required this.width,
+    required this.height,
+    required this.fps,
+    required this.codec,
+  });
+
+  factory Meta.fromJson(Map<String, dynamic> json) {
+    return Meta(
+      tag: json["tag"] ?? "",
+      type: json["type"] ?? "",
+      duration: json["duration"],
+      width: json["width"] ?? 0,
+      height: json["height"] ?? 0,
+      fps: json["fps"] ?? 0,
+      codec: json["codec"] ?? "",
+    );
+  }
+}
 
 class Dimensions {
   final int artWidth;
